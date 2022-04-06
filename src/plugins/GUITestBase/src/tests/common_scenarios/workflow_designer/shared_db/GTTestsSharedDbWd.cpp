@@ -86,8 +86,7 @@ GUI_TEST_CLASS_DEFINITION(read_gui_test_0001) {
 
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
-    QListWidget* datasetList = qobject_cast<QListWidget*>(GTWidget::findWidget(os, "itemsArea"));
-    CHECK_SET_ERR(nullptr != datasetList, "Unable to find dataset list widget");
+    auto datasetList = GTWidget::findListWidget(os, "itemsArea");
 
     CHECK_SET_ERR(1 == datasetList->count(), QString("Invalid dataset item count: expect %1, got %2").arg("1").arg(datasetList->count()));
     CHECK_SET_ERR("et0001_sequence" == datasetList->item(0)->text(), "Invalid dataset item name");
@@ -108,8 +107,7 @@ GUI_TEST_CLASS_DEFINITION(read_gui_test_0002) {
 
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
-    QListWidget* datasetList = qobject_cast<QListWidget*>(GTWidget::findWidget(os, "itemsArea"));
-    CHECK_SET_ERR(nullptr != datasetList, "Unable to find dataset list widget");
+    auto datasetList = GTWidget::findListWidget(os, "itemsArea");
 
     CHECK_SET_ERR(1 == datasetList->count(), QString("Invalid dataset item count: expect %1, got %2").arg("1").arg(datasetList->count()));
     CHECK_SET_ERR("et0003_alignment" == datasetList->item(0)->text(), "Invalid dataset item name");
@@ -130,8 +128,7 @@ GUI_TEST_CLASS_DEFINITION(read_gui_test_0003) {
 
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
-    QListWidget* datasetList = qobject_cast<QListWidget*>(GTWidget::findWidget(os, "itemsArea"));
-    CHECK_SET_ERR(nullptr != datasetList, "Unable to find dataset list widget");
+    auto datasetList = GTWidget::findListWidget(os, "itemsArea");
 
     CHECK_SET_ERR(1 == datasetList->count(), QString("Invalid dataset item count: expect %1, got %2").arg("1").arg(datasetList->count()));
     CHECK_SET_ERR("et0002_features" == datasetList->item(0)->text(), "Invalid dataset item name");
@@ -152,8 +149,7 @@ GUI_TEST_CLASS_DEFINITION(read_gui_test_0004) {
 
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
-    QListWidget* datasetList = qobject_cast<QListWidget*>(GTWidget::findWidget(os, "itemsArea"));
-    CHECK_SET_ERR(nullptr != datasetList, "Unable to find dataset list widget");
+    auto datasetList = GTWidget::findListWidget(os, "itemsArea");
 
     CHECK_SET_ERR(1 == datasetList->count(), QString("Invalid dataset item count: expect %1, got %2").arg("1").arg(datasetList->count()));
     CHECK_SET_ERR("et0004_assembly" == datasetList->item(0)->text(), "Invalid dataset item name");
@@ -174,8 +170,7 @@ GUI_TEST_CLASS_DEFINITION(read_gui_test_0005) {
 
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
-    QListWidget* datasetList = qobject_cast<QListWidget*>(GTWidget::findWidget(os, "itemsArea"));
-    CHECK_SET_ERR(nullptr != datasetList, "Unable to find dataset list widget");
+    auto datasetList = GTWidget::findListWidget(os, "itemsArea");
 
     CHECK_SET_ERR(1 == datasetList->count(), QString("Invalid dataset item count: expect %1, got %2").arg("1").arg(datasetList->count()));
     CHECK_SET_ERR("et0006_text" == datasetList->item(0)->text(), "Invalid dataset item name");
@@ -196,8 +191,7 @@ GUI_TEST_CLASS_DEFINITION(read_gui_test_0006) {
 
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
-    QListWidget* datasetList = qobject_cast<QListWidget*>(GTWidget::findWidget(os, "itemsArea"));
-    CHECK_SET_ERR(nullptr != datasetList, "Unable to find dataset list widget");
+    auto datasetList = GTWidget::findListWidget(os, "itemsArea");
 
     CHECK_SET_ERR(1 == datasetList->count(), QString("Invalid dataset item count: expect %1, got %2").arg("1").arg(datasetList->count()));
     CHECK_SET_ERR("et0005_variations" == datasetList->item(0)->text(), "Invalid dataset item name");
@@ -229,8 +223,7 @@ GUI_TEST_CLASS_DEFINITION(read_gui_test_0008) {
     GTUtilsDialog::waitForDialog(os, new ProjectTreeItemSelectorDialogFiller(os, "ugene_gui_test", "export_tests"));
     GTWidget::click(os, addFromDbButton);
 
-    QListWidget* datasetList = qobject_cast<QListWidget*>(GTWidget::findWidget(os, "itemsArea"));
-    CHECK_SET_ERR(nullptr != datasetList, "Unable to find dataset list widget");
+    auto datasetList = GTWidget::findListWidget(os, "itemsArea");
 
     CHECK_SET_ERR(2 == datasetList->count(), QString("Invalid dataset item count: expect %1, got %2").arg("2").arg(datasetList->count()));
     CHECK_SET_ERR("pt0005_COI" == datasetList->item(0)->text(), "Invalid dataset item name_1");
@@ -259,8 +252,7 @@ GUI_TEST_CLASS_DEFINITION(read_gui_test_0009) {
 
     GTUtilsWorkflowDesigner::setDatasetInputFolder(os, QDir(testDir + "_common_data/bam").absolutePath());
 
-    QListWidget* datasetList = qobject_cast<QListWidget*>(GTWidget::findWidget(os, "itemsArea"));
-    CHECK_SET_ERR(nullptr != datasetList, "Unable to find dataset list widget");
+    auto datasetList = GTWidget::findListWidget(os, "itemsArea");
 
     CHECK_SET_ERR(4 == datasetList->count(), QString("Invalid dataset item count: expect %1, got %2").arg("4").arg(datasetList->count()));
     CHECK_SET_ERR("view_test_0003" == datasetList->item(0)->text(), "Invalid dataset item name_1");
@@ -294,8 +286,7 @@ GUI_TEST_CLASS_DEFINITION(read_gui_test_0010) {
 
     GTWidget::click(os, addFromDbButton);
 
-    QListWidget* datasetList = qobject_cast<QListWidget*>(GTWidget::findWidget(os, "itemsArea"));
-    CHECK_SET_ERR(nullptr != datasetList, "Unable to find dataset list widget");
+    auto datasetList = GTWidget::findListWidget(os, "itemsArea");
 
     CHECK_SET_ERR(5 == datasetList->count(), QString("Invalid dataset item count: expect %1, got %2").arg("5").arg(datasetList->count()));
     CHECK_SET_ERR(!datasetList->findItems("et0001_sequence", Qt::MatchExactly).isEmpty(), "Invalid dataset item name_1");
@@ -331,8 +322,7 @@ GUI_TEST_CLASS_DEFINITION(read_gui_test_0011) {
 
     GTWidget::click(os, addFromDbButton);
 
-    QListWidget* datasetList = qobject_cast<QListWidget*>(GTWidget::findWidget(os, "itemsArea"));
-    CHECK_SET_ERR(nullptr != datasetList, "Unable to find dataset list widget");
+    auto datasetList = GTWidget::findListWidget(os, "itemsArea");
 
     CHECK_SET_ERR(7 == datasetList->count(), QString("Invalid dataset item count: expect %1, got %2").arg("7").arg(datasetList->count()));
     CHECK_SET_ERR("export_test_0008" == datasetList->item(0)->text(), "Invalid dataset item name_1");
@@ -459,7 +449,7 @@ GUI_TEST_CLASS_DEFINITION(write_gui_test_0003) {
 
 GUI_TEST_CLASS_DEFINITION(open_uwl_gui_test_0001) {
     GTLogTracer l;
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/workflow/", "shared_db_objects_input.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
     GTUtilsLog::check(os, l);
@@ -467,7 +457,7 @@ GUI_TEST_CLASS_DEFINITION(open_uwl_gui_test_0001) {
 
 GUI_TEST_CLASS_DEFINITION(open_uwl_gui_test_0002) {
     GTLogTracer l;
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/workflow/", "shared_db_folders_input.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
     GTUtilsLog::check(os, l);
@@ -475,7 +465,7 @@ GUI_TEST_CLASS_DEFINITION(open_uwl_gui_test_0002) {
 
 GUI_TEST_CLASS_DEFINITION(open_uwl_gui_test_0003) {
     GTLogTracer l;
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/workflow/", "shared_db_output.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
     GTUtilsLog::check(os, l);
@@ -527,7 +517,7 @@ GUI_TEST_CLASS_DEFINITION(save_uwl_gui_test_0002) {
 }
 
 GUI_TEST_CLASS_DEFINITION(run_workflow_gui_test_0001_1) {
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/workflow/", "read_from_shared_db_no_credentials.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -545,7 +535,7 @@ GUI_TEST_CLASS_DEFINITION(run_workflow_gui_test_0001_1) {
 GUI_TEST_CLASS_DEFINITION(run_workflow_gui_test_0001_2) {
     GTLogTracer l;
 
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/workflow/", "read_from_shared_db_no_credentials.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -560,7 +550,7 @@ GUI_TEST_CLASS_DEFINITION(run_workflow_gui_test_0001_2) {
 }
 
 GUI_TEST_CLASS_DEFINITION(run_workflow_gui_test_0002) {
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/workflow/", "read_from_inaccessible_shared_db.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -633,7 +623,7 @@ GUI_TEST_CLASS_DEFINITION(run_workflow_gui_test_0004) {
 GUI_TEST_CLASS_DEFINITION(run_workflow_gui_test_0005_1) {
     GTLogTracer l;
 
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/workflow/", "write_to_shared_db_no_credentials.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -648,7 +638,7 @@ GUI_TEST_CLASS_DEFINITION(run_workflow_gui_test_0005_1) {
 }
 
 GUI_TEST_CLASS_DEFINITION(run_workflow_gui_test_0005_2) {
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/workflow/", "write_to_shared_db_no_credentials.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -664,7 +654,7 @@ GUI_TEST_CLASS_DEFINITION(run_workflow_gui_test_0005_2) {
 }
 
 GUI_TEST_CLASS_DEFINITION(run_workflow_gui_test_0006) {
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/workflow/", "write_to_inaccessible_shared_db.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 

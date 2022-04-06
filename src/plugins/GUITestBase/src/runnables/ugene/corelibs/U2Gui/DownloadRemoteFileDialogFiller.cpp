@@ -234,22 +234,22 @@ void RemoteDBDialogFillerDeprecated::commonScenario() {
     QWidget* dialog = GTWidget::getActiveModalWidget(os);
 
     if (!resID.isEmpty()) {
-        QLineEdit* idLineEdit = qobject_cast<QLineEdit*>(GTWidget::findWidget(os, "idLineEdit", dialog));
+        auto idLineEdit = GTWidget::findLineEdit(os, "idLineEdit", dialog);
         GTLineEdit::setText(os, idLineEdit, resID);
     }
 
-    QLineEdit* saveFilenameLineEdit = qobject_cast<QLineEdit*>(GTWidget::findWidget(os, "saveFilenameLineEdit", dialog));
+    auto saveFilenameLineEdit = GTWidget::findLineEdit(os, "saveFilenameLineEdit", dialog);
     if (!saveDirPath.isEmpty()) {
         GTLineEdit::setText(os, saveFilenameLineEdit, saveDirPath);
     }
 
-    QComboBox* databasesBox = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "databasesBox", dialog));
+    auto databasesBox = GTWidget::findComboBox(os, "databasesBox", dialog);
     GTComboBox::selectItemByIndex(os, databasesBox, DBItemNum, useMethod);
 
     GTCheckBox::setChecked(os, GTWidget::findCheckBox(os, "chbForceDownloadSequence", dialog), forceGetSequence);
 
     if (outFormatVal != -1) {
-        QComboBox* formatBox = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "formatBox"));
+        auto formatBox = GTWidget::findComboBox(os, "formatBox");
         GTComboBox::selectItemByIndex(os, formatBox, outFormatVal, useMethod);
     }
     if (!addToProject) {
@@ -258,17 +258,9 @@ void RemoteDBDialogFillerDeprecated::commonScenario() {
         GTCheckBox::setChecked(os, addToProjectButton, false);
     }
     if (pressCancel) {
-        QDialogButtonBox* box = qobject_cast<QDialogButtonBox*>(GTWidget::findWidget(os, "buttonBox", dialog));
-        GT_CHECK(box != nullptr, "buttonBox is NULL");
-        QPushButton* button = box->button(QDialogButtonBox::Cancel);
-        GT_CHECK(button != nullptr, "cancel button is NULL");
-        GTWidget::click(os, button);
+        GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Cancel);
     } else {
-        QDialogButtonBox* box = qobject_cast<QDialogButtonBox*>(GTWidget::findWidget(os, "buttonBox", dialog));
-        GT_CHECK(box != nullptr, "buttonBox is NULL");
-        QPushButton* button = box->button(QDialogButtonBox::Ok);
-        GT_CHECK(button != nullptr, "cancel button is NULL");
-        GTWidget::click(os, button);
+        GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
     }
 }
 

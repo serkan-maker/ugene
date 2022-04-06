@@ -75,8 +75,7 @@ AppSettingsDialogFiller::AppSettingsDialogFiller(HI::GUITestOpStatus& os, Custom
 void AppSettingsDialogFiller::commonScenario() {
     QWidget* dialog = GTWidget::getActiveModalWidget(os);
 
-    QTreeWidget* tree = qobject_cast<QTreeWidget*>(GTWidget::findWidget(os, "tree"));
-    GT_CHECK(tree, "tree widger not found");
+    auto tree = GTWidget::findTreeWidget(os, "tree");
 
     QList<QTreeWidgetItem*> items = GTTreeWidget::getItems(tree->invisibleRootItem());
     foreach (QTreeWidgetItem* item, items) {
@@ -86,7 +85,7 @@ void AppSettingsDialogFiller::commonScenario() {
         }
     }
     if (itemStyle != none) {
-        QComboBox* styleCombo = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "styleCombo", dialog));
+        auto styleCombo = GTWidget::findComboBox(os, "styleCombo", dialog);
         GTComboBox::selectItemByIndex(os, styleCombo, itemStyle);
     }
 
@@ -330,8 +329,7 @@ NewColorSchemeCreator::NewColorSchemeCreator(HI::GUITestOpStatus& os, CustomScen
 void NewColorSchemeCreator::commonScenario() {
     QWidget* dialog = GTWidget::getActiveModalWidget(os);
 
-    QTreeWidget* tree = qobject_cast<QTreeWidget*>(GTWidget::findWidget(os, "tree"));
-    GT_CHECK(tree, "tree widger not found");
+    auto tree = GTWidget::findTreeWidget(os, "tree");
 
     QList<QTreeWidgetItem*> items = GTTreeWidget::getItems(tree->invisibleRootItem());
     foreach (QTreeWidgetItem* item, items) {
@@ -343,8 +341,7 @@ void NewColorSchemeCreator::commonScenario() {
 
     switch (act) {
         case Delete: {
-            QListWidget* colorSchemas = qobject_cast<QListWidget*>(GTWidget::findWidget(os, "colorSchemas", dialog));
-            GT_CHECK(colorSchemas != nullptr, "colorSchemas list widget not found");
+            auto colorSchemas = GTWidget::findListWidget(os, "colorSchemas", dialog);
             GTListWidget::click(os, colorSchemas, schemeName);
             GTGlobals::sleep(500);
 
@@ -400,19 +397,14 @@ void CreateAlignmentColorSchemeDialogFiller::commonScenario() {
 
     GTLineEdit::setText(os, schemeNameLine, schemeName);
 
-    QComboBox* alphabetComboBox = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "alphabetComboBox", dialog));
-    GT_CHECK(alphabetComboBox, "alphabetComboBox lineEdit not found ");
+    auto alphabetComboBox = GTWidget::findComboBox(os, "alphabetComboBox", dialog);
 
     GTComboBox::selectItemByIndex(os, alphabetComboBox, al);
     GTGlobals::sleep(500);
 
     GTUtilsDialog::waitForDialog(os, new ColorSchemeDialogFiller(os));
 
-    QDialogButtonBox* box = qobject_cast<QDialogButtonBox*>(GTWidget::findWidget(os, "buttonBox", dialog));
-    GT_CHECK(box != nullptr, "buttonBox is NULL");
-    QPushButton* button = box->button(QDialogButtonBox::Ok);
-    GT_CHECK(button != nullptr, "ok button is NULL");
-    GTWidget::click(os, button);
+    GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
 }
 #undef GT_METHOD_NAME
 #undef GT_CLASS_NAME

@@ -19,6 +19,7 @@
  * MA 02110-1301, USA.
  */
 #include <api/GTUtils.h>
+#include <base_dialogs/GTFileDialog.h>
 #include <cmath>
 #include <drivers/GTKeyboardDriver.h>
 #include <drivers/GTMouseDriver.h>
@@ -40,13 +41,13 @@
 #include <system/GTClipboard.h>
 #include <system/GTFile.h>
 #include <utils/GTUtilsDialog.h>
+#include <utils/GTUtilsText.h>
 #include <utils/GTUtilsToolTip.h>
 
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QListWidget>
-#include <QPlainTextEdit>
 #include <QRadioButton>
 
 #include <U2Core/BaseDocumentFormats.h>
@@ -85,6 +86,7 @@
 #include "runnables/ugene/corelibs/U2View/ov_msa/ExtractSelectedAsMSADialogFiller.h"
 #include "runnables/ugene/plugins/annotator/FindAnnotationCollocationsDialogFiller.h"
 #include "runnables/ugene/plugins/dna_export/DNASequenceGeneratorDialogFiller.h"
+#include "runnables/ugene/plugins/dna_export/ExportAnnotationsDialogFiller.h"
 #include "runnables/ugene/plugins/dna_export/ExportSequencesDialogFiller.h"
 #include "runnables/ugene/plugins/enzymes/DigestSequenceDialogFiller.h"
 #include "runnables/ugene/plugins/enzymes/FindEnzymesDialogFiller.h"
@@ -93,8 +95,8 @@
 #include "runnables/ugene/plugins/external_tools/TrimmomaticDialogFiller.h"
 #include "runnables/ugene/plugins/workflow_designer/WizardFiller.h"
 #include "runnables/ugene/plugins/workflow_designer/WorkflowMetadialogFiller.h"
-#include "runnables/ugene/plugins_3rdparty/kalign/KalignDialogFiller.h"
 #include "runnables/ugene/plugins_3rdparty/MAFFT/MAFFTSupportRunDialogFiller.h"
+#include "runnables/ugene/plugins_3rdparty/kalign/KalignDialogFiller.h"
 #include "runnables/ugene/ugeneui/DocumentFormatSelectorDialogFiller.h"
 #include "runnables/ugene/ugeneui/SaveProjectDialogFiller.h"
 #include "runnables/ugene/ugeneui/SequenceReadingModeSelectorDialogFiller.h"
@@ -123,7 +125,7 @@ GUI_TEST_CLASS_DEFINITION(test_7003) {
             CHECK_SET_ERR(!AppSettingsDialogFiller::isExternalToolValid(os, "python"),
                           "Python module is expected to be invalid, but in fact it is valid")
 
-            GTUtilsDialog::clickButtonBox(os, GTWidget::getActiveModalWidget(os), QDialogButtonBox::Cancel);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Cancel);
         }
     };
 
@@ -432,7 +434,7 @@ GUI_TEST_CLASS_DEFINITION(test_7128) {
             toolPath = AppSettingsDialogFiller::getExternalToolPath(os, "MAFFT");
             bool isValid = AppSettingsDialogFiller::isExternalToolValid(os, "MAFFT");
             CHECK_SET_ERR(isValid, QString("MAFFT with path '%1' is expected to be valid, but in fact it is invalid").arg(toolPath));
-            GTUtilsDialog::clickButtonBox(os, GTWidget::getActiveModalWidget(os), QDialogButtonBox::Ok);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
         }
 
     private:
@@ -471,7 +473,7 @@ GUI_TEST_CLASS_DEFINITION(test_7151) {
     GTFileDialog::openFileWithDialog(os, dataDir + "samples/ACE", "BL060C3.ace");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
-    GTUtilsProject::closeProject(os);
+    GTUtilsProject::closeProject(os, true);
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
     QList<QLabel*> labels = GTWidget::findLabelByText(os, "- BL060C3.ace");
@@ -607,6 +609,27 @@ GUI_TEST_CLASS_DEFINITION(test_7183) {
     // 5. Push Export button in the dialog.
     // 6. Repeat steps 2-5 8 times
     // Expected state: UGENE is not crash
+}
+
+GUI_TEST_CLASS_DEFINITION(test_7191) {
+    /*
+     * 1. Open data/samples/sars.gb
+     * 2. Delete sequence object
+     * 3. Export annotation object
+     * Expected state: there is no errors in the log
+     */
+    GTFileDialog::openFile(os, dataDir + "/samples/Genbank/", "sars.gb");
+    GTUtilsTaskTreeView::waitTaskFinished(os);
+    GTUtilsProjectTreeView::click(os, "NC_004718");
+
+    GTUtilsDialog::waitForDialog(os, new PopupChooser(os, QStringList() << ACTION_PROJECT__REMOVE_SELECTED));
+    GTMouseDriver::click(Qt::RightButton);
+    GTLogTracer lt;
+    GTUtilsDialog::waitForDialog(os, new ExportAnnotationsFiller(sandBoxDir + "test_7191.gb", ExportAnnotationsFiller::ugenedb, os));
+    GTUtilsDialog::waitForDialog(os, new PopupChooserByText(os, {"Export/Import", "Export annotations..."}));
+    GTUtilsProjectTreeView::callContextMenu(os, "NC_004718 features");
+    GTUtilsTaskTreeView::waitTaskFinished(os);
+    CHECK_SET_ERR(!lt.hasErrors(), "Errors in log: " + lt.getJoinedErrorString());
 }
 
 GUI_TEST_CLASS_DEFINITION(test_7193) {
@@ -1038,7 +1061,7 @@ GUI_TEST_CLASS_DEFINITION(test_7390) {
             CHECK_SET_ERR(!AppSettingsDialogFiller::isExternalToolValid(os, "SPAdes"),
                           "SPAdes is expected to be invalid, but in fact it is valid");
 
-            GTUtilsDialog::clickButtonBox(os, GTWidget::getActiveModalWidget(os), QDialogButtonBox::Ok);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
         }
     };
 
@@ -1441,14 +1464,14 @@ GUI_TEST_CLASS_DEFINITION(test_7447) {
     GTUtilsTaskTreeView::waitTaskFinished(os);
     auto selectedRect = GTUtilsMSAEditorSequenceArea::getSelectedRect(os);
     CHECK_SET_ERR(selectedRect == QRect(0, 0, 3, 1),
-                  QString("Illegal first result coordinates: " + GTUtils::rectToString(selectedRect)));
+                  QString("Illegal first result coordinates: " + GTUtilsText::rectToString(selectedRect)));
 
     // Press 'Next', move to the next result.
     GTUtilsOptionPanelMsa::clickNext(os);
     GTUtilsTaskTreeView::waitTaskFinished(os);
     selectedRect = GTUtilsMSAEditorSequenceArea::getSelectedRect(os);
     CHECK_SET_ERR(selectedRect == QRect(21, 0, 3, 1),
-                  QString("Illegal second result coordinates: " + GTUtils::rectToString(selectedRect)));
+                  QString("Illegal second result coordinates: " + GTUtilsText::rectToString(selectedRect)));
 
     // Enter illegal 'M' character: check that there is a warning and no results in the list.
     QTextEdit* patternEdit = GTWidget::findTextEdit(os, "textPattern");
@@ -1474,7 +1497,7 @@ GUI_TEST_CLASS_DEFINITION(test_7447) {
 
     selectedRect = GTUtilsMSAEditorSequenceArea::getSelectedRect(os);
     CHECK_SET_ERR(selectedRect == QRect(0, 0, 3, 1),
-                  QString("Illegal first (2) result coordinates: " + GTUtils::rectToString(selectedRect)));
+                  QString("Illegal first (2) result coordinates: " + GTUtilsText::rectToString(selectedRect)));
 }
 
 GUI_TEST_CLASS_DEFINITION(test_7448_1) {
@@ -2083,7 +2106,7 @@ GUI_TEST_CLASS_DEFINITION(test_7505) {
 
     GTUtilsMsaEditor::clickSequenceName(os, "Pc_Metavir10");
 
-    int firstVisibleBase = GTUtilsMSAEditorSequenceArea::getFirstVisibleBase(os);
+    int firstVisibleBase = GTUtilsMSAEditorSequenceArea::getFirstVisibleBaseIndex(os);
     CHECK_SET_ERR(firstVisibleBase == 0, "1. Unexpected first visible base: " + QString::number(firstVisibleBase));
 
     QRect rect = GTUtilsMsaEditor::getSequenceNameRect(os, "Pc_Metavir10");
@@ -2091,23 +2114,23 @@ GUI_TEST_CLASS_DEFINITION(test_7505) {
 
     GTMouseDriver::doubleClick();
     int expectedCenter = 66;
-    firstVisibleBase = GTUtilsMSAEditorSequenceArea::getFirstVisibleBase(os);
+    firstVisibleBase = GTUtilsMSAEditorSequenceArea::getFirstVisibleBaseIndex(os);
     CHECK_SET_ERR(firstVisibleBase < expectedCenter, "2. Unexpected first visible base: " + QString::number(firstVisibleBase));
-    int lastVisibleBase = GTUtilsMSAEditorSequenceArea::getLastVisibleBase(os);
+    int lastVisibleBase = GTUtilsMSAEditorSequenceArea::getLastVisibleBaseIndex(os);
     CHECK_SET_ERR(lastVisibleBase > expectedCenter, "2. Unexpected last visible base: " + QString::number(lastVisibleBase));
 
     GTMouseDriver::doubleClick();
     expectedCenter = 1220;
-    firstVisibleBase = GTUtilsMSAEditorSequenceArea::getFirstVisibleBase(os);
+    firstVisibleBase = GTUtilsMSAEditorSequenceArea::getFirstVisibleBaseIndex(os);
     CHECK_SET_ERR(firstVisibleBase < expectedCenter, "3. Unexpected first visible base: " + QString::number(firstVisibleBase));
-    lastVisibleBase = GTUtilsMSAEditorSequenceArea::getLastVisibleBase(os);
+    lastVisibleBase = GTUtilsMSAEditorSequenceArea::getLastVisibleBaseIndex(os);
     CHECK_SET_ERR(lastVisibleBase > expectedCenter, "3. Unexpected last visible base: " + QString::number(lastVisibleBase));
 
     GTMouseDriver::doubleClick();
     expectedCenter = 66;
-    firstVisibleBase = GTUtilsMSAEditorSequenceArea::getFirstVisibleBase(os);
+    firstVisibleBase = GTUtilsMSAEditorSequenceArea::getFirstVisibleBaseIndex(os);
     CHECK_SET_ERR(firstVisibleBase < expectedCenter, "4. Unexpected first visible base: " + QString::number(firstVisibleBase));
-    lastVisibleBase = GTUtilsMSAEditorSequenceArea::getLastVisibleBase(os);
+    lastVisibleBase = GTUtilsMSAEditorSequenceArea::getLastVisibleBaseIndex(os);
     CHECK_SET_ERR(lastVisibleBase > expectedCenter, "4. Unexpected last visible base: " + QString::number(lastVisibleBase));
 }
 
@@ -2171,6 +2194,36 @@ GUI_TEST_CLASS_DEFINITION(test_7509) {
 
     // Close MCA editor -> UGENE should not crash.
     GTUtilsMdi::closeActiveWindow(os);
+}
+
+GUI_TEST_CLASS_DEFINITION(test_7511) {
+    // Check that Blast Search filters the list of available tool based on the selected file sequence alphabet.
+    class BlastToolListCheckScenario : public CustomScenario {
+    public:
+        void run(HI::GUITestOpStatus& os) override {
+            auto dialog = GTWidget::getActiveModalWidget(os);
+            auto toolsCombo = GTWidget::findComboBox(os, "programNameComboBox");
+            auto selectFileButton = GTWidget::findToolButton(os, "browseInput", dialog);
+            GTComboBox::checkValuesPresence(os, toolsCombo, {"blastn", "blastp", "blastx", "tblastx", "tblastn"});
+
+            GTUtilsDialog::waitForDialog(os, new GTFileDialogUtils(os, dataDir + "samples/FASTA/human_T1.fa"));
+            GTWidget::click(os, selectFileButton);
+            GTUtilsTaskTreeView::waitTaskFinished(os);
+            // Check that the list of tools is updated to nucleic tools.
+            GTComboBox::checkValuesPresence(os, toolsCombo, {"blastn", "blastx", "tblastx"});
+
+            GTUtilsDialog::waitForDialog(os, new GTFileDialogUtils(os, testDir + "_common_data/fasta/titin.fa"));
+            GTWidget::click(os, selectFileButton);
+            GTUtilsTaskTreeView::waitTaskFinished(os);
+            //  Check that the list of tools is updated to amino tools.
+            GTComboBox::checkValuesPresence(os, toolsCombo, {"blastp", "tblastn"});
+
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Cancel); // Cancel "Blast" dialog.
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Cancel); // Cancel "Save project" popup.
+        }
+    };
+    GTUtilsDialog::waitForDialog(os, new BlastLocalSearchDialogFiller(os, new BlastToolListCheckScenario()));
+    GTMenu::clickMainMenuItem(os, {"Tools", "BLAST", "BLAST search..."});
 }
 
 GUI_TEST_CLASS_DEFINITION(test_7517) {
@@ -2279,6 +2332,20 @@ GUI_TEST_CLASS_DEFINITION(test_7539) {
     CHECK_SET_ERR(tooltip.contains("<b>Translation</b> = R"), "Expected amino sequence info in tooltip for a joined complementary annotation: " + tooltip);
 }
 
+GUI_TEST_CLASS_DEFINITION(test_7546) {
+    // Check that tree or msa with ambiguous names can't be synchronized.
+    GTFileDialog::openFile(os, testDir + "_common_data/clustal/same_name_sequences.aln");
+    GTUtilsMsaEditor::checkMsaEditorWindowIsActive(os);
+
+    GTUtilsMsaEditor::toggleCollapsingMode(os);
+    GTUtilsMsaEditor::buildPhylogeneticTree(os, sandBoxDir + "test_7546.nwk");
+    GTUtilsTaskTreeView::waitTaskFinished(os);
+
+    // Expected result: UGENE does not crash and Sync button is OFF.
+    QAbstractButton* syncModeButton = GTAction::button(os, "sync_msa_action");
+    CHECK_SET_ERR(!syncModeButton->isEnabled(), "Sync mode must be not available");
+}
+
 GUI_TEST_CLASS_DEFINITION(test_7548) {
     // Check that UGENE shows correct MSA symbols for huge MSA files when scrolled to large positions.
     GTFileDialog::openFile(os, testDir + "_common_data/clustal/big.aln");
@@ -2356,6 +2423,71 @@ GUI_TEST_CLASS_DEFINITION(test_7556) {
     GTUtilsMsaEditor::getTreeView(os);  // Check that tree view is opened.
 }
 
-}  // namespace GUITest_regression_scenarios
+GUI_TEST_CLASS_DEFINITION(test_7572) {
+    // 1. Open HIV-1.aln
+    // 2. Click the "Build Tree" button on the toolbar.
+    // 3. Start building tree with Likelihood algorithm
+    // 4. Cancel Tree building task
+    // Expected state: no message about QProcess destructor in details log
+    GTFileDialog::openFile(os, dataDir + "samples/CLUSTALW/HIV-1.aln");
+    GTUtilsTaskTreeView::waitTaskFinished(os);
 
+    class PhyMLMaximumLikelihoodScenario : public CustomScenario {
+    public:
+        void run(GUITestOpStatus& os) {
+            QWidget* dialog = GTWidget::getActiveModalWidget(os);
+            GTComboBox::selectItemByText(os, "algorithmBox", dialog, "PhyML Maximum Likelihood");
+            GTLineEdit::setText(os, "fileNameEdit", sandBoxDir + "test_7572.nwk", dialog);
+            GTUtilsDialog::clickButtonBox(os, dialog, QDialogButtonBox::Ok);
+        }
+    };
+    GTUtilsDialog::waitForDialog(os, new BuildTreeDialogFiller(os, new PhyMLMaximumLikelihoodScenario));
+    GTToolbar::clickButtonByTooltipOnToolbar(os, MWTOOLBAR_ACTIVEMDI, "Build Tree");
+
+    QString taskName = "Calculating Phylogenetic Tree";
+    GTUtilsTaskTreeView::checkTaskIsPresent(os, taskName);
+    QString taskStatus = GTUtilsTaskTreeView::getTaskStatus(os, taskName);
+    CHECK_SET_ERR(taskStatus == "Running", "The task status is incorrect: " + taskStatus);
+    GTUtilsTaskTreeView::cancelTask(os, taskName);
+    GTUtilsTaskTreeView::waitTaskFinished(os);
+    // We can't put it in macro because it will be auto-triggered by log message from macro itself.
+    bool messageNotFound = !U2::GTLogTracer::checkMessage("QProcess: Destroyed while process");
+    CHECK_SET_ERR(messageNotFound, "Message about QProcess destructor found, but shouldn't be.");
+}
+
+GUI_TEST_CLASS_DEFINITION(test_7575) {
+    // Check that reset-zoom action does not crash UGENE.
+    GTFileDialog::openFile(os, dataDir + "samples/CLUSTALW/COI.aln");
+    GTUtilsMsaEditor::checkMsaEditorWindowIsActive(os);
+
+    GTUtilsMsaEditor::zoomIn(os);
+    GTUtilsMsaEditor::zoomIn(os);
+    GTUtilsMsaEditor::zoomIn(os);
+
+    GTUtilsMSAEditorSequenceArea::scrollToPosition(os, {550, 1});
+    GTUtilsMsaEditor::resetZoom(os);
+    // Expected state: UGENE does not crash.
+}
+
+GUI_TEST_CLASS_DEFINITION(test_7576) {
+    // Check that zoom-to-selection in MSA keeps the selected region within the visible sequence area.
+    GTFileDialog::openFile(os, dataDir + "samples/CLUSTALW/COI.aln");
+    GTUtilsMsaEditor::checkMsaEditorWindowIsActive(os);
+
+    QPoint topLeft = {500, 5};
+    QPoint bottomRight = {540, 15};
+    GTUtilsMSAEditorSequenceArea::selectArea(os, topLeft, bottomRight);
+    GTUtilsMsaEditor::zoomToSelection(os);
+    int firstVisibleBaseIndex = GTUtilsMSAEditorSequenceArea::getFirstVisibleBaseIndex(os);
+    int lastVisibleBaseIndex = GTUtilsMSAEditorSequenceArea::getLastVisibleBaseIndex(os);
+    CHECK_SET_ERR(firstVisibleBaseIndex <= topLeft.x() && lastVisibleBaseIndex >= bottomRight.x(),
+                  "Invalid visible X range: " + QString::number(firstVisibleBaseIndex) + ":" + QString::number(lastVisibleBaseIndex));
+
+    int firstVisibleRowIndex = GTUtilsMSAEditorSequenceArea::getFirstVisibleRowIndex(os);
+    int lastVisibleRowIndex = GTUtilsMSAEditorSequenceArea::getLastVisibleRowIndex(os);
+    CHECK_SET_ERR(firstVisibleRowIndex <= topLeft.y() && lastVisibleRowIndex >= bottomRight.y(),
+                  "Invalid visible Y range: " + QString::number(firstVisibleRowIndex) + ":" + QString::number(lastVisibleRowIndex));
+}
+
+}  // namespace GUITest_regression_scenarios
 }  // namespace U2

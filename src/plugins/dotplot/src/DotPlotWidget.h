@@ -89,6 +89,7 @@ public:
     QString getYSequenceName();
 
     void setSequences(U2SequenceObject* seqX, U2SequenceObject* seqY);
+    bool isShowDeleteDialogOnDotPlotDestroying() const;
 
     virtual bool onCloseEvent();
 
@@ -100,6 +101,7 @@ signals:
 public slots:
     bool sl_showSettingsDialog(bool disableLoad = false);
     void sl_filter();
+    void sl_showDeleteDialog(bool isCancelable);
 
 private slots:
     void sl_taskStateChanged();
@@ -108,7 +110,6 @@ private slots:
     void sl_showSaveImageDialog();
     bool sl_showSaveFileDialog();
     bool sl_showLoadFileDialog();
-    void sl_showDeleteDialog();
 
     void sl_onSequenceSelectionChanged(LRegionsSelection*, const QVector<U2Region>&, const QVector<U2Region>&);
 
@@ -167,6 +168,8 @@ private:
     QAction* loadDotPlotAction;
     QAction* deleteDotPlotAction;
     QAction* filterDotPlotAction;
+    
+    bool showDeleteDialogOnDotPlotDestroying = true;
 
     int textSpace;
     static const int rulerNotchSize = 2;
@@ -204,6 +207,7 @@ private:
     void clearRepeatSelection();
 
     void selectNearestRepeat(const QPointF&);
+    float calculateDistance(float x, float y, DotPlotResults r, bool isReverse) const;
     const DotPlotResults* findNearestRepeat(const QPoint&);  // sets nearestInverted
 
     void calcZooming(const QPointF& oldzoom, const QPointF& newzoom, const QPoint& p, bool emitSignal = true);

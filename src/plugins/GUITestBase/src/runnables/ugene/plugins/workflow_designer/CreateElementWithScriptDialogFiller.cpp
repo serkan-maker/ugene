@@ -38,8 +38,7 @@ namespace U2 {
 void CreateElementWithScriptDialogFiller::commonScenario() {
     QWidget* dialog = GTWidget::getActiveModalWidget(os);
 
-    QLineEdit* nameEdit = qobject_cast<QLineEdit*>(GTWidget::findWidget(os, "nameEdit", dialog));
-    GT_CHECK(nameEdit, "nameEdit not found");
+    auto nameEdit = GTWidget::findLineEdit(os, "nameEdit", dialog);
     GTLineEdit::setText(os, nameEdit, name);
 
     GTUtilsDialog::clickButtonBox(os, dialog, QDialogButtonBox::Ok);
@@ -52,8 +51,7 @@ void CreateElementWithScriptDialogFiller::commonScenario() {
 void ScriptEditorDialogFiller::commonScenario() {
     QWidget* dialog = GTWidget::getActiveModalWidget(os);
 
-    QLineEdit* scriptPathEdit = qobject_cast<QLineEdit*>(GTWidget::findWidget(os, "scriptPathEdit", dialog));
-    GT_CHECK(scriptPathEdit != nullptr, "scriptPath lineEdit not found");
+    auto scriptPathEdit = GTWidget::findLineEdit(os, "scriptPathEdit", dialog);
     GTLineEdit::setText(os, scriptPathEdit, url);
 
     QTextEdit* edit = nullptr;
@@ -70,14 +68,7 @@ void ScriptEditorDialogFiller::commonScenario() {
         GTWidget::click(os, GTWidget::findWidget(os, "checkButton", dialog));
         GTUtilsDialog::checkNoActiveWaiters(os);
     }
-
-    QDialogButtonBox* box = qobject_cast<QDialogButtonBox*>(GTWidget::findWidget(os, "buttonBox", dialog));
-    GT_CHECK(box != nullptr, "buttonBox is NULL");
-
-    QPushButton* button = box->button(QDialogButtonBox::Ok);
-    GT_CHECK(button != nullptr, "Ok button is NULL");
-    GT_CHECK(button->isEnabled(), "Ok button is not enabled");
-    GTWidget::click(os, button);
+    GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
 }
 #undef GT_METHOD_NAME
 #undef GT_CLASS_NAME
@@ -101,12 +92,7 @@ void ScriptEditorDialogSyntaxChecker::commonScenario() {
 
     GTGlobals::sleep(1000);
 
-    QDialogButtonBox* box = qobject_cast<QDialogButtonBox*>(GTWidget::findWidget(os, "buttonBox", dialog));
-    GT_CHECK(box != nullptr, "buttonBox is NULL");
-    QPushButton* button = box->button(QDialogButtonBox::Ok);
-    GT_CHECK(button != nullptr, "ok button is NULL");
-    GT_CHECK(button->isEnabled(), "Ok button is not enabled");
-    GTWidget::click(os, button);
+    GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
 }
 #undef GT_METHOD_NAME
 #undef GT_CLASS_NAME

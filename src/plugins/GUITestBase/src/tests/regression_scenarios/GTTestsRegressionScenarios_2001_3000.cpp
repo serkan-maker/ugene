@@ -1444,7 +1444,7 @@ GUI_TEST_CLASS_DEFINITION(test_2314) {
 }
 
 GUI_TEST_CLASS_DEFINITION(test_2316) {
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, dataDir + "samples/../workflow_samples/Alignment", "basic_align.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -1501,7 +1501,7 @@ GUI_TEST_CLASS_DEFINITION(test_2269) {
 GUI_TEST_CLASS_DEFINITION(test_2270) {
     // 1. Open file "data/cmdline/snp.uwl"
     // Ecpected state: scheme opened in WD without problems
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTLogTracer lt;
     GTFileDialog::openFile(os, dataDir + "cmdline/", "snp.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
@@ -1511,12 +1511,11 @@ GUI_TEST_CLASS_DEFINITION(test_2270) {
 GUI_TEST_CLASS_DEFINITION(test_2281) {
     // 1. Open WD
     GTUtilsWorkflowDesigner::openWorkflowDesigner(os);
-    QTabWidget* tabs = qobject_cast<QTabWidget*>(GTWidget::findWidget(os, "tabs"));
-    CHECK_SET_ERR(tabs != nullptr, "tabs widget not found");
+    auto tabs = GTWidget::findTabWidget(os, "tabs");
 
     // 2. Click the "samples" bar. The samples hint is shown
     GTTabWidget::setCurrentIndex(os, tabs, 1);
-    QGraphicsView* sceneView = qobject_cast<QGraphicsView*>(GTWidget::findWidget(os, "sceneView"));
+    auto sceneView = GTWidget::findGraphicsView(os, "sceneView");
 
     QImage img = GTWidget::getImage(os, sceneView);
 
@@ -1597,7 +1596,7 @@ GUI_TEST_CLASS_DEFINITION(test_2298) {
 
     //    3. Collapse any node in the tree
     QGraphicsItem* node = GTUtilsPhyTree::getNodes(os).at(1);
-    QGraphicsView* treeView = qobject_cast<QGraphicsView*>(GTWidget::findWidget(os, "treeView"));
+    auto treeView = GTWidget::findGraphicsView(os, "treeView");
     treeView->ensureVisible(node);
     GTThread::waitForMainThread();
     GTMouseDriver::moveTo(GTUtilsPhyTree::getGlobalCenterCoord(os, node));
@@ -1640,8 +1639,7 @@ GUI_TEST_CLASS_DEFINITION(test_2293) {
             GTUtilsDialog::waitForDialog(os, ob);
             GTWidget::click(os, GTWidget::findWidget(os, "addRefButton", dialog));
 
-            QDialogButtonBox* box = qobject_cast<QDialogButtonBox*>(GTWidget::findWidget(os, "buttonBox", dialog));
-            CHECK_SET_ERR(box != nullptr, "buttonBox is NULL");
+            auto box = GTWidget::findDialogButtonBox(os, "buttonBox", dialog);
 
             GTUtilsDialog::waitForDialog(os, new MessageBoxDialogFiller(os, "No"));
             QPushButton* okButton = box->button(QDialogButtonBox::Ok);
@@ -2132,10 +2130,10 @@ GUI_TEST_CLASS_DEFINITION(test_2379) {
         virtual void run() {
             QWidget* dialog = GTWidget::getActiveModalWidget(os);
 
-            QLineEdit* projectNameEdit = qobject_cast<QLineEdit*>(GTWidget::findWidget(os, "projectNameEdit", dialog));
+            auto projectNameEdit = GTWidget::findLineEdit(os, "projectNameEdit", dialog);
             GTLineEdit::setText(os, projectNameEdit, projectName);
 
-            QLineEdit* projectFileEdit = qobject_cast<QLineEdit*>(GTWidget::findWidget(os, "projectFilePathEdit", dialog));
+            auto projectFileEdit = GTWidget::findLineEdit(os, "projectFilePathEdit", dialog);
             GTLineEdit::setText(os, projectFileEdit, projectFolder + "/" + projectFile);
 
 #ifdef Q_OS_DARWIN
@@ -2368,7 +2366,7 @@ GUI_TEST_CLASS_DEFINITION(test_2404) {
     GTWidget::click(os, GTWidget::findWidget(os, "ArrowHeader_Other settings"));
     GTWidget::click(os, GTWidget::findWidget(os, "ArrowHeader_Save annotation(s) to"));
     GTWidget::click(os, GTWidget::findWidget(os, "ArrowHeader_Annotation parameters"));
-    QScrollArea* sa = qobject_cast<QScrollArea*>(GTWidget::findWidget(os, "OP_SCROLL_AREA"));
+    auto sa = GTWidget::findScrollArea(os, "OP_SCROLL_AREA");
     QScrollBar* scroll = sa->verticalScrollBar();
     CHECK_SET_ERR(scroll != nullptr, "Scroll bar is NULL");
     CHECK_SET_ERR(scroll->isVisible(), "Scroll bar is invisible!");
@@ -2600,8 +2598,7 @@ GUI_TEST_CLASS_DEFINITION(test_2449) {
     GTWidget::click(os, GTWidget::findWidget(os, "lblFontSettings"));
 
     //    There is a font size spinbox. You can set zero value to it: in this case font has its standard size (on mac), but this value is incorrect.
-    QSpinBox* sizeSpinBox = qobject_cast<QSpinBox*>(GTWidget::findWidget(os, "fontSizeSpinBox"));
-    CHECK_SET_ERR(nullptr != sizeSpinBox, "Size spin box not found");
+    auto sizeSpinBox = GTWidget::findSpinBox(os, "fontSizeSpinBox");
 
     GTWidget::setFocus(os, sizeSpinBox);
     int prev = 0;
@@ -2973,8 +2970,7 @@ GUI_TEST_CLASS_DEFINITION(test_2542) {
     GTWidget::click(os, GTWidget::findWidget(os, "OP_PAIRALIGN"));
     GTWidget::click(os, GTWidget::findWidget(os, "ArrowHeader_Output settings"));
 
-    QCheckBox* check = qobject_cast<QCheckBox*>(GTWidget::findWidget(os, "inNewWindowCheckBox"));
-    CHECK_SET_ERR(check != nullptr, "inNewWindowCheckBox not found!");
+    auto check = GTWidget::findCheckBox(os, "inNewWindowCheckBox");
     GTCheckBox::setChecked(os, check, false);
 
     // State:
@@ -3245,8 +3241,7 @@ GUI_TEST_CLASS_DEFINITION(test_2578) {
     GTWidget::click(os, GTWidget::findWidget(os, "OP_MSA_HIGHLIGHTING"));
 
     //    3. Select 'agreements' highlighting scheme.
-    QComboBox* combo = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "highlightingScheme"));
-    CHECK_SET_ERR(combo != nullptr, "highlightingScheme not found!");
+    auto combo = GTWidget::findComboBox(os, "highlightingScheme");
     GTComboBox::selectItemByText(os, combo, "Agreements");
 
     QWidget* exportButton = GTWidget::findWidget(os, "exportHighlightning");
@@ -3544,17 +3539,17 @@ GUI_TEST_CLASS_DEFINITION(test_2622_1) {
     GTKeyboardDriver::keyClick('=', Qt::ShiftModifier);
 
     // 6. Check "Results no longer than" and set the value 1.
-    QCheckBox* boxUseMaxResultLen = qobject_cast<QCheckBox*>(GTWidget::findWidget(os, "boxUseMaxResultLen"));
+    auto boxUseMaxResultLen = GTWidget::findCheckBox(os, "boxUseMaxResultLen");
     GTCheckBox::setChecked(os, boxUseMaxResultLen, true);
 
-    QSpinBox* boxMaxResultLen = qobject_cast<QSpinBox*>(GTWidget::findWidget(os, "boxMaxResultLen"));
+    auto boxMaxResultLen = GTWidget::findSpinBox(os, "boxMaxResultLen");
     GTSpinBox::setValue(os, boxMaxResultLen, 1, GTGlobals::UseKeyBoard);
 
     // UGENE does not hang and all results are 1 bp length (100 results).
     GTUtilsTaskTreeView::waitTaskFinished(os);
     GTUtilsLog::check(os, l);
 
-    QLabel* resultLabel = qobject_cast<QLabel*>(GTWidget::findWidget(os, "resultLabel"));
+    auto resultLabel = GTWidget::findLabel(os, "resultLabel");
     CHECK_SET_ERR(resultLabel->text() == "Results: 1/100", "Unexpected find algorithm results");
 }
 
@@ -3891,11 +3886,7 @@ GUI_TEST_CLASS_DEFINITION(test_2701) {
             GTComboBox::selectItemByText(os, formatsBox, "JPG");
             CHECK_SET_ERR(spin->isVisible(), "Quality spin box not visible!");
 
-            QDialogButtonBox* box = qobject_cast<QDialogButtonBox*>(GTWidget::findWidget(os, "buttonBox", dialog));
-            CHECK_SET_ERR(box != nullptr, "buttonBox is NULL");
-            QPushButton* button = box->button(QDialogButtonBox::Cancel);
-            CHECK_SET_ERR(button != nullptr, "Cancel button is NULL");
-            GTWidget::click(os, button);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Cancel);
         }
     };
 
@@ -4189,9 +4180,7 @@ GUI_TEST_CLASS_DEFINITION(test_2762) {
         }
         virtual void run() {
 #ifdef Q_OS_DARWIN
-            QDialogButtonBox* buttonBox = qobject_cast<QDialogButtonBox*>(GTWidget::findWidget(os, "buttonBox"));
-            QAbstractButton* cancel = buttonBox->button(QDialogButtonBox::Cancel);
-            GTWidget::click(os, cancel);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Cancel);
 #else
             GTKeyboardDriver::keyClick(Qt::Key_Escape);
 #endif
@@ -4263,7 +4252,6 @@ GUI_TEST_CLASS_DEFINITION(test_2773) {
     GTLogTracer l;
     GTUtilsWorkflowDesigner::openWorkflowDesigner(os);
 
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
     GTUtilsWorkflowDesigner::loadWorkflow(os, testDir + "_common_data/cmdline/custom-script-worker-functions/translateTest/translateTest.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -4446,14 +4434,11 @@ GUI_TEST_CLASS_DEFINITION(test_2808) {
     GTUtilsWorkflowDesigner::addAlgorithm(os, "Sequence Marker");
     GTUtilsWorkflowDesigner::click(os, "Sequence Marker");
 
-    QToolButton* addButton = qobject_cast<QToolButton*>(GTWidget::findWidget(os, "addButton"));
-    CHECK_SET_ERR(addButton != nullptr, "AddButton not found!");
+    auto addButton = GTWidget::findToolButton(os, "addButton");
 
-    QToolButton* editButton = qobject_cast<QToolButton*>(GTWidget::findWidget(os, "editButton"));
-    CHECK_SET_ERR(editButton != nullptr, "EditButton not found!");
+    auto editButton = GTWidget::findToolButton(os, "editButton");
 
-    QToolButton* removeButton = qobject_cast<QToolButton*>(GTWidget::findWidget(os, "removeButton"));
-    CHECK_SET_ERR(removeButton != nullptr, "RemoveButton not found!");
+    auto removeButton = GTWidget::findToolButton(os, "removeButton");
 
     CHECK_SET_ERR(addButton->isEnabled(), "AddButton is disabled!");
     CHECK_SET_ERR(!editButton->isEnabled(), "EditButton is enabled!");
@@ -4465,7 +4450,7 @@ GUI_TEST_CLASS_DEFINITION(test_2808) {
             : Filler(_os, "EditMarkerGroupDialog") {
         }
         void run() override {
-            GTUtilsDialog::clickButtonBox(os, GTWidget::getActiveModalWidget(os), QDialogButtonBox::Ok);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
         }
     };
     GTUtilsDialog::waitForDialog(os, new OkClicker(os));
@@ -4475,8 +4460,7 @@ GUI_TEST_CLASS_DEFINITION(test_2808) {
     CHECK_SET_ERR(!editButton->isEnabled(), "EditButton is enabled!");
     CHECK_SET_ERR(!removeButton->isEnabled(), "AddButton is enabled!");
 
-    QTableView* groupTable = qobject_cast<QTableView*>(GTWidget::findWidget(os, "markerTable"));
-    CHECK_SET_ERR(groupTable != nullptr, "MarkerTable is not found");
+    auto groupTable = GTWidget::findTableView(os, "markerTable");
     GTWidget::click(os, groupTable);
 
     QPoint p = GTTableView::getCellPosition(os, groupTable, 0, 0);
@@ -4503,8 +4487,7 @@ GUI_TEST_CLASS_DEFINITION(test_2809) {
     GTUtilsWorkflowDesigner::addAlgorithm(os, "Sequence Marker");
     GTUtilsWorkflowDesigner::click(os, "Sequence Marker");
 
-    QToolButton* addButton = qobject_cast<QToolButton*>(GTWidget::findWidget(os, "addButton"));
-    CHECK_SET_ERR(addButton != nullptr, "AddButton not found!");
+    auto addButton = GTWidget::findToolButton(os, "addButton");
 
     class OkClicker : public Filler {
     public:
@@ -4512,14 +4495,13 @@ GUI_TEST_CLASS_DEFINITION(test_2809) {
             : Filler(_os, "EditMarkerGroupDialog") {
         }
         void run() override {
-            GTUtilsDialog::clickButtonBox(os, GTWidget::getActiveModalWidget(os), QDialogButtonBox::Ok);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
         }
     };
     GTUtilsDialog::waitForDialog(os, new OkClicker(os));
     GTWidget::click(os, addButton);
 
-    QTableView* groupTable = qobject_cast<QTableView*>(GTWidget::findWidget(os, "markerTable"));
-    CHECK_SET_ERR(groupTable != nullptr, "MarkerTable not found");
+    auto groupTable = GTWidget::findTableView(os, "markerTable");
     GTWidget::click(os, groupTable);
 
     QScrollBar* scroll = groupTable->verticalScrollBar();
@@ -4708,8 +4690,7 @@ GUI_TEST_CLASS_DEFINITION(test_2897) {
     GTUtilsOptionPanelMsa::openTab(os, GTUtilsOptionPanelMsa::Highlighting);
     GTUtilsOptionPanelMsa::checkTabIsOpened(os, GTUtilsOptionPanelMsa::Highlighting);
 
-    QComboBox* combo = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "highlightingScheme"));
-    CHECK_SET_ERR(combo != nullptr, "highlightingScheme not found!");
+    auto combo = GTWidget::findComboBox(os, "highlightingScheme");
     int oldItemsNumber = combo->count();
 
     //    3. Create a new custom nucleotide color scheme.
@@ -4725,8 +4706,7 @@ GUI_TEST_CLASS_DEFINITION(test_2897) {
                                                                         << "Custom schemes" << colorSchemeName));
     GTMenu::showContextMenu(os, msaSeqArea);
 
-    combo = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "highlightingScheme"));
-    CHECK_SET_ERR(combo != nullptr, "highlightingScheme not found!");
+    combo = GTWidget::findComboBox(os, "highlightingScheme");
     int newItemsNumber = combo->count();
 
     CHECK_SET_ERR(newItemsNumber == oldItemsNumber, "exportButton is disabled unexpectedly");
@@ -5056,11 +5036,10 @@ GUI_TEST_CLASS_DEFINITION(test_2929) {
         }
         virtual void run() {
             QWidget* dialog = GTWidget::getActiveModalWidget(os);
-            QLineEdit* modelFileEdit = qobject_cast<QLineEdit*>(GTWidget::findWidget(os, "modelFileEdit"));
-            CHECK_SET_ERR(modelFileEdit != nullptr, "modelFileEdit not found!");
+            auto modelFileEdit = GTWidget::findLineEdit(os, "modelFileEdit");
             CHECK_SET_ERR(modelFileEdit->text().isEmpty(), "Model is set!");
 
-            QComboBox* errComboBox = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "errLevelBox"));
+            auto errComboBox = GTWidget::findComboBox(os, "errLevelBox");
             CHECK_SET_ERR(errComboBox->currentText().isEmpty(), "Threshold is set!");
 
             GTUtilsDialog::waitForDialog(os, new MessageBoxDialogFiller(os, QMessageBox::Ok));
@@ -5128,8 +5107,7 @@ GUI_TEST_CLASS_DEFINITION(test_2945) {
     QAbstractButton* cvButton = GTAction::button(os, "CircularViewAction");
     CHECK_SET_ERR(cvButton->isChecked(), "CV button is not checked!");
 
-    QSplitter* splitter = qobject_cast<QSplitter*>(GTWidget::findWidget(os, "annotated_DNA_splitter"));
-    CHECK_SET_ERR(splitter != nullptr, "annotated_DNA_splitter not found");
+    auto splitter = GTWidget::findSplitter(os, "annotated_DNA_splitter");
     int idx = splitter->indexOf(GTWidget::findWidget(os, "annotations_tree_view"));
     QSplitterHandle* handle = splitter->handle(idx);
     CHECK_SET_ERR(handle != nullptr, "SplitterHadle not found");
@@ -5370,7 +5348,7 @@ GUI_TEST_CLASS_DEFINITION(test_2991) {
     GTFileDialog::openFile(os, testDir + "_common_data/alphabets/", "extended_amino_1000.fa");
     GTUtilsTaskTreeView::waitTaskFinished(os);
     QWidget* w = GTWidget::findWidget(os, "ADV_single_sequence_widget_0");
-    QLabel* label = qobject_cast<QLabel*>(GTWidget::findWidget(os, "nameLabel", w));
+    auto label = GTWidget::findLabel(os, "nameLabel", w);
     CHECK_SET_ERR(label->text().contains("[amino ext]"), QString("Unexpected label of sequence name: %1, must contain %2").arg(label->text()).arg("[amino ext]"));
 }
 

@@ -44,6 +44,7 @@
 #include <system/GTClipboard.h>
 #include <system/GTFile.h>
 #include <utils/GTKeyboardUtils.h>
+#include <utils/GTUtilsText.h>
 
 #include <QApplication>
 #include <QDir>
@@ -661,7 +662,7 @@ GUI_TEST_CLASS_DEFINITION(test_6135) {
     class NoButtonClickScenario : public CustomScenario {
     public:
         void run(HI::GUITestOpStatus& os) override {
-            GTUtilsDialog::clickButtonBox(os, GTWidget::getActiveModalWidget(os), QDialogButtonBox::Ok);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
         }
     };
 
@@ -1297,7 +1298,7 @@ GUI_TEST_CLASS_DEFINITION(test_6240) {
     };
     // 2. Open "Tools" -> "NGS data analysis" -> "Reads quality control..." workflow
     // 3. Choose "samples/Assembly/chrM.sam" as input and click "Run"
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTUtilsDialog::waitForDialog(os, new WizardFiller(os, "Quality Control by FastQC Wizard", new Scenario()));
     GTMenu::clickMainMenuItem(os, {"Tools", "NGS data analysis", "Reads quality control..."});
 
@@ -1733,8 +1734,7 @@ GUI_TEST_CLASS_DEFINITION(test_6309) {
     public:
         void run(HI::GUITestOpStatus& os) override {
             QWidget* dialog = GTWidget::getActiveModalWidget(os);
-            QDialogButtonBox* box = qobject_cast<QDialogButtonBox*>(GTWidget::findWidget(os, "buttonBox", dialog));
-            CHECK_SET_ERR(box != nullptr, "buttonBox is NULL");
+            auto box = GTWidget::findDialogButtonBox(os, "buttonBox", dialog);
             QPushButton* pushButton = box->button(QDialogButtonBox::Ok);
             CHECK_SET_ERR(pushButton != nullptr, "pushButton is NULL");
 
@@ -1777,7 +1777,7 @@ GUI_TEST_CLASS_DEFINITION(test_6314) {
     GTUtilsDialog::waitForDialog(os, new SaveProjectDialogFiller(os, QDialogButtonBox::No));
     GTMenu::clickMainMenuItem(os, {"File", "Save all"}, GTGlobals::UseMouse);
     GTUtilsTaskTreeView::waitTaskFinished(os);
-    GTUtilsProject::closeProject(os);
+    GTUtilsProject::closeProject(os, true);
 
     // 4. Open the file again
     GTFileDialog::openFile(os, filePath);
@@ -1864,7 +1864,7 @@ GUI_TEST_CLASS_DEFINITION(test_6397) {
     class Custom : public CustomScenario {
         void run(HI::GUITestOpStatus& os) {
             QWidget* dialog = GTWidget::getActiveModalWidget(os);
-            QSpinBox* maxDistanceBox = qobject_cast<QSpinBox*>(GTWidget::findWidget(os, "maxDistBox", dialog));
+            auto maxDistanceBox = GTWidget::findSpinBox(os, "maxDistBox", dialog);
             GTSpinBox::checkLimits(os, maxDistanceBox, 0, 1000000);
 
             GTUtilsDialog::clickButtonBox(os, dialog, QDialogButtonBox::Cancel);
@@ -2505,7 +2505,7 @@ GUI_TEST_CLASS_DEFINITION(test_6541_1) {
     CHECK_SET_ERR(undoButton->isEnabled(), "'Undo' button is unexpectedly disabled");
     //         Open "empty_mult_seq.fa".
     //         Expected result : there are no sequences in the Realignment Editor.The "align_selected_sequences_to_alignment" button is disabled.
-    GTUtilsProject::closeProject(os);
+    GTUtilsProject::closeProject(os, true, true);
     GTFileDialog::openFile(os, testDir + "_common_data/empty_sequences/", "empty_mult_seq.fa");
     GTUtilsMsaEditor::checkMsaEditorWindowIsActive(os);
     realignButton = GTAction::button(os, "align_selected_sequences_to_alignment");
@@ -2551,7 +2551,7 @@ GUI_TEST_CLASS_DEFINITION(test_6541_3) {
     //     Expected result : sequences realigned.
     QAbstractButton* undoButton = GTAction::button(os, "msa_action_undo");
     CHECK_SET_ERR(undoButton->isEnabled(), "'Undo' button is unexpectably disabled");
-    GTUtilsProject::closeProject(os);
+    GTUtilsProject::closeProject(os, true, true);
 
     //     Open �protein.aln�.
     GTFileDialog::openFile(os, testDir + "_common_data/realign_sequences_in_alignment/", "protein.aln");
@@ -2572,7 +2572,7 @@ GUI_TEST_CLASS_DEFINITION(test_6541_3) {
     //     Expected result : sequences realigned.
     undoButton = GTAction::button(os, "msa_action_undo");
     CHECK_SET_ERR(undoButton->isEnabled(), "'Undo' button is unexpectably disabled");
-    GTUtilsProject::closeProject(os);
+    GTUtilsProject::closeProject(os, true, true);
 
     //     Open �RAW.aln�.Select any sequence.
     GTFileDialog::openFile(os, testDir + "_common_data/clustal/", "RAW.aln");
@@ -2831,7 +2831,7 @@ GUI_TEST_CLASS_DEFINITION(test_6548_1) {
 
     // 2. Open OP tab and select "Weak similarities" color scheme
     GTUtilsOptionPanelMsa::openTab(os, GTUtilsOptionPanelMsa::Highlighting);
-    QComboBox* colorScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "colorScheme"));
+    auto colorScheme = GTWidget::findComboBox(os, "colorScheme");
     GTComboBox::selectItemByText(os, colorScheme, "Weak similarities");
 
     // Zoom in multiple times to make chars bigger. (Do not zoom to max because it will move some chars out of the screen on Windows agents).
@@ -2879,7 +2879,7 @@ GUI_TEST_CLASS_DEFINITION(test_6548_2) {
 
     // 2. Open OP tab and select "Weak similarities" color scheme
     GTUtilsOptionPanelMsa::openTab(os, GTUtilsOptionPanelMsa::Highlighting);
-    QComboBox* colorScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "colorScheme"));
+    auto colorScheme = GTWidget::findComboBox(os, "colorScheme");
     GTComboBox::selectItemByText(os, colorScheme, "Weak similarities");
 
     // Zoom to max.
@@ -3011,8 +3011,7 @@ GUI_TEST_CLASS_DEFINITION(test_6586_1) {
         void run(HI::GUITestOpStatus& os) {
             QWidget* dialog = GTWidget::getActiveModalWidget(os);
             // 3. Skip the first page
-            QRadioButton* rbIntegratedTool = qobject_cast<QRadioButton*>(GTWidget::findWidget(os, "rbIntegratedTool", dialog));
-            CHECK_SET_ERR(nullptr != rbIntegratedTool, "rbIntegratedTool not found");
+            auto rbIntegratedTool = GTWidget::findRadioButton(os, "rbIntegratedTool", dialog);
 
             GTRadioButton::click(os, rbIntegratedTool);
             GTUtilsWizard::clickButton(os, GTUtilsWizard::Next);
@@ -3026,8 +3025,7 @@ GUI_TEST_CLASS_DEFINITION(test_6586_1) {
                 QWidget* add = GTWidget::findWidget(os, addButtonNames[i], dialog);
                 CHECK_SET_ERR(nullptr != add, "Add button not found");
 
-                QTableView* table = qobject_cast<QTableView*>(GTWidget::findWidget(os, dataTableNames[i]));
-                CHECK_SET_ERR(nullptr != table, "QTableView not found");
+                auto table = GTWidget::findTableView(os, dataTableNames[i]);
 
                 GTWidget::click(os, add);
                 GTWidget::click(os, add);
@@ -3071,8 +3069,7 @@ GUI_TEST_CLASS_DEFINITION(test_6586_2) {
         void run(HI::GUITestOpStatus& os) {
             QWidget* dialog = GTWidget::getActiveModalWidget(os);
             // 3. Skip the first page
-            QRadioButton* rbIntegratedTool = qobject_cast<QRadioButton*>(GTWidget::findWidget(os, "rbIntegratedTool", dialog));
-            CHECK_SET_ERR(nullptr != rbIntegratedTool, "rbIntegratedTool not found");
+            auto rbIntegratedTool = GTWidget::findRadioButton(os, "rbIntegratedTool", dialog);
 
             GTRadioButton::click(os, rbIntegratedTool);
             GTUtilsWizard::clickButton(os, GTUtilsWizard::Next);
@@ -3086,8 +3083,7 @@ GUI_TEST_CLASS_DEFINITION(test_6586_2) {
                 QWidget* add = GTWidget::findWidget(os, addButtonNames[i], dialog);
                 CHECK_SET_ERR(nullptr != add, "Add button not found");
 
-                QTableView* table = qobject_cast<QTableView*>(GTWidget::findWidget(os, dataTableNames[i]));
-                CHECK_SET_ERR(nullptr != table, "QTableView not found");
+                auto table = GTWidget::findTableView(os, dataTableNames[i]);
 
                 QWidget* del = GTWidget::findWidget(os, deleteButtonNames[i], dialog);
                 CHECK_SET_ERR(nullptr != del, "Delete button not found");
@@ -3139,7 +3135,7 @@ GUI_TEST_CLASS_DEFINITION(test_6616_1) {
     GTWidget::click(os, GTWidget::findWidget(os, "show_hide_zoom_view", toolbar));
 
     // 3. Close the project and open it again
-    GTUtilsProject::closeProject(os);
+    GTUtilsProject::closeProject(os, true);
     GTFileDialog::openFile(os, dataDir + "samples/Genbank/murine.gb");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -3188,7 +3184,7 @@ GUI_TEST_CLASS_DEFINITION(test_6616_2) {
     GTKeyboardDriver::keyClick(Qt::Key_Escape);
 
     // 4. Close the project and open it again
-    GTUtilsProject::closeProject(os);
+    GTUtilsProject::closeProject(os, true);
     GTFileDialog::openFile(os, dataDir + "samples/Genbank/murine.gb");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -3229,7 +3225,7 @@ GUI_TEST_CLASS_DEFINITION(test_6616_3) {
     GTKeyboardDriver::keyClick(Qt::Key_Escape);
 
     // 3. Close the project and open it again
-    GTUtilsProject::closeProject(os);
+    GTUtilsProject::closeProject(os, true);
     GTFileDialog::openFile(os, dataDir + "samples/Genbank/murine.gb");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -3261,7 +3257,7 @@ GUI_TEST_CLASS_DEFINITION(test_6616_4) {
     GTKeyboardDriver::keyClick(Qt::Key_Escape);
 
     // 3. Close the project and open it again
-    GTUtilsProject::closeProject(os);
+    GTUtilsProject::closeProject(os, true);
     GTFileDialog::openFile(os, dataDir + "samples/Genbank/murine.gb");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -3285,7 +3281,7 @@ GUI_TEST_CLASS_DEFINITION(test_6616_5) {
     GTWidget::click(os, GTAction::button(os, destGraph));
 
     // 3. Close the project and open it again
-    GTUtilsProject::closeProject(os);
+    GTUtilsProject::closeProject(os, true);
     GTFileDialog::openFile(os, dataDir + "samples/Genbank/murine.gb");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -3669,7 +3665,7 @@ GUI_TEST_CLASS_DEFINITION(test_6649) {
     GTUtilsTaskTreeView::waitTaskFinished(os);
     CHECK_SET_ERR(1 == GTUtilsPcr::productsCount(os), "Wrong results count");
 
-    QComboBox* annsComboBox = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "annsComboBox"));
+    auto annsComboBox = GTWidget::findComboBox(os, "annsComboBox");
     GTComboBox::selectItemByIndex(os, annsComboBox, 1);
     GTWidget::click(os, GTWidget::findWidget(os, "extractProductButton"));
     GTUtilsTaskTreeView::waitTaskFinished(os);
@@ -3804,8 +3800,7 @@ GUI_TEST_CLASS_DEFINITION(test_6659) {
     GTWidget::click(os, GTWidget::findWidget(os, "OP_MSA_GENERAL"));
 
     // 3. The "Copy" button is disabled.
-    QToolButton* copyButton = qobject_cast<QToolButton*>(GTWidget::findWidget(os, "copyButton"));
-    CHECK_SET_ERR(copyButton != nullptr, "copyButton not found");
+    auto copyButton = GTWidget::findToolButton(os, "copyButton");
     CHECK_SET_ERR(!copyButton->isEnabled(), "copyButton is unexpectedly enabled");
 
     // 4. Select any region and press ctrl+c
@@ -3843,8 +3838,8 @@ GUI_TEST_CLASS_DEFINITION(test_6667_1) {
     QRect actualSelection = GTUtilsMSAEditorSequenceArea::getSelectedRect(os);
     CHECK_SET_ERR(expectedSelection == actualSelection,
                   QString("Incorrect selection after the pattern search. Expected: %1, actual %2")
-                      .arg(GTUtils::rectToString(expectedSelection))
-                      .arg(GTUtils::rectToString(actualSelection)));
+                      .arg(GTUtilsText::rectToString(expectedSelection))
+                      .arg(GTUtilsText::rectToString(actualSelection)));
 
     // 6. Click "next" button
     GTUtilsOptionPanelMsa::clickNext(os);
@@ -3853,8 +3848,8 @@ GUI_TEST_CLASS_DEFINITION(test_6667_1) {
     actualSelection = GTUtilsMSAEditorSequenceArea::getSelectedRect(os);
     CHECK_SET_ERR(expectedSelection == actualSelection,
                   QString("Incorrect selection after the pattern search. Expected: %1, actual %2")
-                      .arg(GTUtils::rectToString(expectedSelection))
-                      .arg(GTUtils::rectToString(actualSelection)));
+                      .arg(GTUtilsText::rectToString(expectedSelection))
+                      .arg(GTUtilsText::rectToString(actualSelection)));
 
     // 7. Click "next" button
     GTUtilsOptionPanelMsa::clickNext(os);
@@ -3863,8 +3858,8 @@ GUI_TEST_CLASS_DEFINITION(test_6667_1) {
     actualSelection = GTUtilsMSAEditorSequenceArea::getSelectedRect(os);
     CHECK_SET_ERR(expectedSelection == actualSelection,
                   QString("Incorrect selection after the pattern search. Expected: %1, actual %2")
-                      .arg(GTUtils::rectToString(expectedSelection))
-                      .arg(GTUtils::rectToString(actualSelection)));
+                      .arg(GTUtilsText::rectToString(expectedSelection))
+                      .arg(GTUtilsText::rectToString(actualSelection)));
 }
 
 GUI_TEST_CLASS_DEFINITION(test_6672) {
@@ -4748,8 +4743,7 @@ GUI_TEST_CLASS_DEFINITION(test_6715) {
         void run(HI::GUITestOpStatus& os) {
             QWidget* dialog = GTWidget::getActiveModalWidget(os);
 
-            QTreeWidget* tree = qobject_cast<QTreeWidget*>(GTWidget::findWidget(os, "tree"));
-            CHECK_SET_ERR(tree, "tree widget not found");
+            auto tree = GTWidget::findTreeWidget(os, "tree");
 
             GTTreeWidget::click(os, GTTreeWidget::findItem(os, tree, "  Alignment Color Scheme"));
 
@@ -4917,15 +4911,48 @@ GUI_TEST_CLASS_DEFINITION(test_6742) {
     GTFileDialog::openFile(os, dataDir + "samples/CLUSTALW", "COI.aln");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
-    QStringList mainItems = {"Overview", "Show offsets", "Zoom In", "Zoom Out", "Zoom To Selection", "Reset Zoom", "Colors", "Highlighting", "Change Font", "Clear selection"};
-    GTUtilsDialog::waitForDialog(os, new PopupCheckerByText(os, {"Appearance"}, mainItems));
+    QStringList mainItems = {
+        "Overview",
+        "Show offsets",
+        "Zoom In",
+        "Zoom Out",
+        "Zoom To Selection",
+        "Reset Zoom",
+        "Colors",
+        "Highlighting",
+        "Change Font",
+        "Clear selection",
+    };
+    GTUtilsDialog::waitForDialog(os, new PopupCheckerByText(os, {"Appearance"}, mainItems, PopupChecker::Exists));
     GTWidget::click(os, GTUtilsMdi::activeWindow(os), Qt::RightButton);
 
-    QStringList colorsItems = {"No colors", "Jalview", "Percentage identity", "Percentage identity (colored)", "Percentage identity (gray)", "UGENE", "UGENE Sanger", "Weak similarities"};
+    mainItems.removeOne("Reset Zoom");
+    GTUtilsDialog::waitForDialog(os, new PopupCheckerByText(os, {"Appearance"}, mainItems, PopupChecker::IsEnabled));
+    GTWidget::click(os, GTUtilsMdi::activeWindow(os), Qt::RightButton);
+
+    QStringList colorsItems = {
+        "No colors",
+        "Jalview",
+        "Percentage identity",
+        "Percentage identity (colored)",
+        "Percentage identity (gray)",
+        "UGENE",
+        "UGENE Sanger",
+        "Weak similarities",
+    };
     GTUtilsDialog::waitForDialog(os, new PopupCheckerByText(os, {"Appearance", "Colors"}, colorsItems));
     GTWidget::click(os, GTUtilsMdi::activeWindow(os), Qt::RightButton);
 
-    QStringList highlightingItems = {"No highlighting", "Agreements", "Disagreements", "Gaps", "Conservation level", "Transitions", "Transversions", "Use dots"};
+    QStringList highlightingItems = {
+        "No highlighting",
+        "Agreements",
+        "Disagreements",
+        "Gaps",
+        "Conservation level",
+        "Transitions",
+        "Transversions",
+        "Use dots",
+    };
     GTUtilsDialog::waitForDialog(os, new PopupCheckerByText(os, {"Appearance", "Highlighting"}, highlightingItems));
     GTWidget::click(os, GTUtilsMdi::activeWindow(os), Qt::RightButton);
 
@@ -5426,12 +5453,10 @@ GUI_TEST_CLASS_DEFINITION(test_6809) {
     GTUtilsOptionPanelMsa::checkTabIsOpened(os, GTUtilsOptionPanelMsa::General);
 
     // Set "Sort by" as "Name" and "Sort order" as "Ascending"
-    QComboBox* sortByCombo = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "sortByComboBox"));
-    CHECK_SET_ERR(sortByCombo != nullptr, "sortByCombo is NULL");
+    auto sortByCombo = GTWidget::findComboBox(os, "sortByComboBox");
     GTComboBox::selectItemByText(os, sortByCombo, "Name");
 
-    QComboBox* sortOrderCombo = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "sortOrderComboBox"));
-    CHECK_SET_ERR(sortOrderCombo != nullptr, "sortOrderCombo is NULL");
+    auto sortOrderCombo = GTWidget::findComboBox(os, "sortOrderComboBox");
     GTComboBox::selectItemByText(os, sortOrderCombo, "Ascending");
 
     // Press "Sort" button
@@ -5516,7 +5541,7 @@ GUI_TEST_CLASS_DEFINITION(test_6816) {
     QLabel* detailsLinkLabel = dynamic_cast<QLabel*>(GTWidget::findWidget(os, "detailsLinkLabel"));
     CHECK_SET_ERR(detailsLinkLabel->isHidden(), "detailsLinkLabel unexpectedly shown");
 
-    QLabel* warningLabel = qobject_cast<QLabel*>(GTWidget::findWidget(os, "warningLabel"));
+    auto warningLabel = GTWidget::findLabel(os, "warningLabel");
     CHECK_SET_ERR(warningLabel->text().contains("Unable to calculate primer statistics."), "Incorrect warning message");
 }
 
@@ -5844,8 +5869,7 @@ GUI_TEST_CLASS_DEFINITION(test_6899_1) {
 
     GTUtilsOptionPanelMsa::openTab(os, GTUtilsOptionPanelMsa::General);
 
-    QComboBox* copyType = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "copyType"));
-    CHECK_SET_ERR(copyType != nullptr, "copy combobox not found");
+    auto copyType = GTWidget::findComboBox(os, "copyType");
 
     GTComboBox::selectItemByText(os, copyType, "Plain text");
 
@@ -6004,7 +6028,7 @@ GUI_TEST_CLASS_DEFINITION(test_6924) {
         }
     };
     // Open "Tools" -> "NGS data analysis" -> "Reads quality control..." workflow
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTUtilsDialog::waitForDialog(os, new WizardFiller(os, "Quality Control by FastQC Wizard", new Scenario()));
     GTMenu::clickMainMenuItem(os, {"Tools", "NGS data analysis", "Reads quality control..."});
     // Expected: The dashboard appears
@@ -6024,7 +6048,7 @@ GUI_TEST_CLASS_DEFINITION(test_6926) {
             GTUtilsDialog::waitForDialog(os, new GTFileDialogUtils(os, testDir + "_common_data/workflow/custom tools configs/my_custom_tool.xml"));
             GTWidget::click(os, GTWidget::findWidget(os, "pbImport"));
 
-            GTUtilsDialog::clickButtonBox(os, GTWidget::getActiveModalWidget(os), QDialogButtonBox::Ok);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
         }
     };
 
@@ -6038,7 +6062,7 @@ GUI_TEST_CLASS_DEFINITION(test_6926) {
             CHECK_SET_ERR(itemNames.length() == 1, "Expected to have 1 item in the tree, got: " + QString::number(itemNames.length()));
             CHECK_SET_ERR(itemNames.first() == "My custom tool", "Expected to find 'My custom tool' in the list, got: " + itemNames.first());
 
-            GTUtilsDialog::clickButtonBox(os, GTWidget::getActiveModalWidget(os), QDialogButtonBox::Ok);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
         }
     };
 
@@ -6226,12 +6250,10 @@ GUI_TEST_CLASS_DEFINITION(test_6959) {
     GTUtilsOptionPanelMsa::openTab(os, GTUtilsOptionPanelMsa::General);
     GTUtilsOptionPanelMsa::checkTabIsOpened(os, GTUtilsOptionPanelMsa::General);
 
-    QComboBox* sortByCombo = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "sortByComboBox"));
-    CHECK_SET_ERR(sortByCombo != nullptr, "sortByCombo is NULL");
+    auto sortByCombo = GTWidget::findComboBox(os, "sortByComboBox");
     GTComboBox::selectItemByText(os, sortByCombo, "Name");
 
-    QComboBox* sortOrderCombo = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "sortOrderComboBox"));
-    CHECK_SET_ERR(sortOrderCombo != nullptr, "sortOrderCombo is NULL");
+    auto sortOrderCombo = GTWidget::findComboBox(os, "sortOrderComboBox");
     GTComboBox::selectItemByText(os, sortOrderCombo, "Ascending");
 
     GTWidget::click(os, GTWidget::findWidget(os, "sortButton"));

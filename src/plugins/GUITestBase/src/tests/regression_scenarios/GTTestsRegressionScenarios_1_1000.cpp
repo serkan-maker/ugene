@@ -528,7 +528,7 @@ GUI_TEST_CLASS_DEFINITION(test_0574) {
             GTTreeWidget::click(os, GTTreeWidget::findItem(os, tree, "AA (Fwd)"));
             GTWidget::click(os, GTWidget::findWidget(os, "editFragmentButton"));
 
-            GTUtilsDialog::clickButtonBox(os, GTWidget::getActiveModalWidget(os), QDialogButtonBox::Cancel);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Cancel);
         }
     };
     GTUtilsDialog::waitForDialog(os, new ConstructMoleculeDialogFiller(os, new Scenario()));
@@ -1229,8 +1229,7 @@ GUI_TEST_CLASS_DEFINITION(test_0768) {
     //    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTUtilsWorkflowDesigner::openWorkflowDesigner(os);
 
-    QTreeWidget* w = qobject_cast<QTreeWidget*>(GTWidget::findWidget(os, "WorkflowPaletteElements"));
-    CHECK_SET_ERR(w != nullptr, "WorkflowPaletteElements is null");
+    auto w = GTWidget::findTreeWidget(os, "WorkflowPaletteElements");
 
     QTreeWidgetItem* foundItem = nullptr;
     QList<QTreeWidgetItem*> outerList = w->findItems("", Qt::MatchContains);
@@ -1542,8 +1541,8 @@ GUI_TEST_CLASS_DEFINITION(test_0801) {
     GTUtilsTaskTreeView::waitTaskFinished(os);
     GTUtilsOptionsPanel::runFindPatternWithHotKey("AAAGCTTTA", os);
     GTUtilsOptionPanelSequenceView::setRegionType(os, "Custom region");
-    GTLineEdit::setText(os, qobject_cast<QLineEdit*>(GTWidget::findWidget(os, "editStart")), "2");
-    GTLineEdit::setText(os, qobject_cast<QLineEdit*>(GTWidget::findWidget(os, "editEnd")), "5");
+    GTLineEdit::setText(os, GTWidget::findLineEdit(os, "editStart"), "2");
+    GTLineEdit::setText(os, GTWidget::findLineEdit(os, "editEnd"), "5");
 }
 
 GUI_TEST_CLASS_DEFINITION(test_0807) {
@@ -1703,13 +1702,11 @@ GUI_TEST_CLASS_DEFINITION(test_0814) {
             QWidget* dialog = GTWidget::getActiveModalWidget(os);
             AppSettingsDialogFiller::openTab(os, AppSettingsDialogFiller::Logging);
 
-            QCheckBox* fileOut = qobject_cast<QCheckBox*>(GTWidget::findWidget(os, "fileOutCB"));
-            CHECK_SET_ERR(fileOut != nullptr, "No fileOutCB");
+            auto fileOut = GTWidget::findCheckBox(os, "fileOutCB");
             CHECK_SET_ERR(!fileOut->isChecked(), "CheckBox is checked!");
             GTCheckBox::setChecked(os, fileOut);
 
-            QLineEdit* fileName = qobject_cast<QLineEdit*>(GTWidget::findWidget(os, "outFileEdit"));
-            CHECK_SET_ERR(fileName != nullptr, "No outFileEdit");
+            auto fileName = GTWidget::findLineEdit(os, "outFileEdit");
             GTLineEdit::setText(os, fileName, name);
 
             GTUtilsDialog::clickButtonBox(os, dialog, QDialogButtonBox::Ok);
@@ -2449,7 +2446,7 @@ GUI_TEST_CLASS_DEFINITION(test_0896) {
 
     GTFileDialogUtils* ob = new GTFileDialogUtils(os, testDir + "_common_data/scenarios/_regression/896/_input", "SAMtools.etc");
     GTUtilsDialog::waitForDialog(os, ob);
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new MessageBoxDialogFiller(os, QMessageBox::Discard));
+    GTUtilsDialog::waitForDialog(os, new MessageBoxDialogFiller(os, QMessageBox::Discard));
 
     QAbstractButton* button = GTAction::button(os, "AddElementWithCommandLineTool");
     GTWidget::click(os, button);
@@ -2622,7 +2619,7 @@ GUI_TEST_CLASS_DEFINITION(test_0928) {
             : Filler(_os, "ORFDialogBase") {
         }
         void run() override {
-            GTUtilsDialog::clickButtonBox(os, GTWidget::getActiveModalWidget(os), QDialogButtonBox::Ok);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
         }
     };
 
@@ -2991,17 +2988,17 @@ GUI_TEST_CLASS_DEFINITION(test_0981_1) {
     GTFileDialog::openFile(os, dataDir + "samples/FASTA/", "human_T1.fa");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
-    Runnable* filler1 = new InsertSequenceFiller(os,
-                                                 "qweqwea",
-                                                 InsertSequenceFiller::Resize,
-                                                 1,
-                                                 "",
-                                                 InsertSequenceFiller::FASTA,
-                                                 false,
-                                                 false,
-                                                 GTGlobals::UseMouse,
-                                                 true);
-    GTUtilsDialog::waitForDialog(os, filler1);
+    GTUtilsDialog::waitForDialog(os,
+                                 new InsertSequenceFiller(os,
+                                                          "qweqwea",
+                                                          InsertSequenceFiller::Resize,
+                                                          1,
+                                                          "",
+                                                          InsertSequenceFiller::FASTA,
+                                                          false,
+                                                          false,
+                                                          GTGlobals::UseMouse,
+                                                          true));
     GTMenu::clickMainMenuItem(os, {"Actions", "Edit", "Insert subsequence..."}, GTGlobals::UseKey);
 }
 
@@ -3013,7 +3010,9 @@ GUI_TEST_CLASS_DEFINITION(test_0981_2) {
     GTUtilsDialog::waitForDialog(os, new PopupChooser(os, {"Select", "Sequence region"}));
     GTWidget::click(os, GTUtilsSequenceView::getSeqWidgetByNumber(os)->getDetView(), Qt::RightButton);
     Runnable* filler1 = new ReplaceSubsequenceDialogFiller(os,
-                                                           "qweqwea");
+                                                           "qweqwea",
+                                                           false,
+                                                           true);
     GTUtilsDialog::waitForDialog(os, filler1);
     GTUtilsDialog::waitForDialog(os, new PopupChooser(os, QStringList() << ADV_MENU_EDIT << ACTION_EDIT_REPLACE_SUBSEQUENCE, GTGlobals::UseMouse));
     GTWidget::click(os, GTUtilsSequenceView::getSeqWidgetByNumber(os)->getDetView(), Qt::RightButton);
@@ -3200,7 +3199,7 @@ GUI_TEST_CLASS_DEFINITION(test_1000) {
 
         void run(HI::GUITestOpStatus& os) override {
             QWidget* dialog = GTWidget::getActiveModalWidget(os);
-            GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new LicenseAgreementDialogFiller(os));
+            GTUtilsDialog::waitForDialog(os, new LicenseAgreementDialogFiller(os));
             GTComboBox::selectItemByText(os, GTWidget::findComboBox(os, "algorithmComboBox", dialog), algorithm);
 
             //    4. Press "Start prediction".

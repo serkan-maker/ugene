@@ -468,7 +468,7 @@ GUI_TEST_CLASS_DEFINITION(test_4045) {
             : Filler(_os, "ORFDialogBase") {
         }
         void run() override {
-            GTUtilsDialog::clickButtonBox(os, GTWidget::getActiveModalWidget(os), QDialogButtonBox::Ok);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
         }
     };
 
@@ -560,14 +560,10 @@ GUI_TEST_CLASS_DEFINITION(test_4064) {
         }
         virtual void run() {
             QWidget* dialog = GTWidget::getActiveModalWidget(os);
-            QLabel* label = qobject_cast<QLabel*>(GTWidget::findWidget(os, "indexNotAvailableLabel", dialog));
-            CHECK_SET_ERR(label != nullptr, "indexNotAvailableLabel not found");
+            auto label = GTWidget::findLabel(os, "indexNotAvailableLabel", dialog);
             CHECK_SET_ERR(label->isVisible() == warningExistence, "Warning message is shown");
 
-            QDialogButtonBox* box = qobject_cast<QDialogButtonBox*>(GTWidget::findWidget(os, "buttonBox", dialog));
-            QPushButton* button = box->button(QDialogButtonBox::Cancel);
-            CHECK_SET_ERR(button != nullptr, "cancel button is NULL");
-            GTWidget::click(os, button);
+            GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Cancel);
         }
 
     private:
@@ -848,10 +844,10 @@ GUI_TEST_CLASS_DEFINITION(test_4096) {
     class ExportSeqsAsMsaScenario : public CustomScenario {
         void run(HI::GUITestOpStatus& os) {
             QWidget* dialog = GTWidget::getActiveModalWidget(os);
-            QCheckBox* addToProjectBox = qobject_cast<QCheckBox*>(GTWidget::findWidget(os, "addToProjectBox", dialog));
+            auto addToProjectBox = GTWidget::findCheckBox(os, "addToProjectBox", dialog);
             CHECK_SET_ERR(addToProjectBox->isChecked(), "'Add document to project' checkbox is not set");
 
-            QLineEdit* lineEdit = qobject_cast<QLineEdit*>(GTWidget::findWidget(os, "fileNameEdit", dialog));
+            auto lineEdit = GTWidget::findLineEdit(os, "fileNameEdit", dialog);
             GTLineEdit::setText(os, lineEdit, sandBoxDir + "test_4096.aln");
 
             GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
@@ -983,7 +979,7 @@ GUI_TEST_CLASS_DEFINITION(test_4100) {
 GUI_TEST_CLASS_DEFINITION(test_4104) {
     GTLogTracer l;
     // 1. Open the attached workflow file.
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/scenarios/_regression/4104/test.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -1299,8 +1295,7 @@ GUI_TEST_CLASS_DEFINITION(test_4124) {
             GTUtilsDialog::waitForDialog(os, new GTFileDialogUtils(os, sandBoxDir, "out.ugenedb", GTFileDialogUtils::Save));
             GTWidget::click(os, GTWidget::findWidget(os, "setResultFileNameButton", dialog));
 
-            QCheckBox* check = qobject_cast<QCheckBox*>(GTWidget::findWidget(os, "firstMatchBox"));
-            CHECK_SET_ERR(check != nullptr, "firstMatchBox not found!");
+            auto check = GTWidget::findCheckBox(os, "firstMatchBox");
             GTCheckBox::setChecked(os, check, 0);
 
             GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Ok);
@@ -1337,13 +1332,11 @@ GUI_TEST_CLASS_DEFINITION(test_4127) {
             QWidget* dialog = GTWidget::getActiveModalWidget(os);
             CHECK_SET_ERR(dialog != nullptr, "dialog not found");
 
-            QTabWidget* tabWidget = qobject_cast<QTabWidget*>(GTWidget::findWidget(os, "tabWidget", dialog));
-            CHECK_SET_ERR(tabWidget != nullptr, "tabWidget not found!");
+            auto tabWidget = GTWidget::findTabWidget(os, "tabWidget", dialog);
             GTTabWidget::setCurrentIndex(os, tabWidget, 1);
 
-            QRadioButton* radio = qobject_cast<QRadioButton*>(GTWidget::findWidget(os, "rbCreateNewTable", dialog));
+            auto radio = GTWidget::findRadioButton(os, "rbCreateNewTable", dialog);
             // GTRadioButton::getRadioButtonByText(os, "Create new table", dialog);
-            CHECK_SET_ERR(radio != nullptr, "rbCreateNewTable not found!");
             GTRadioButton::click(os, radio);
 
             GTUtilsDialog::clickButtonBox(os, dialog, QDialogButtonBox::Ok);
@@ -1575,7 +1568,7 @@ GUI_TEST_CLASS_DEFINITION(test_4153) {
 
     GTWidget::click(os, GTWidget::findWidget(os, "OP_MSA_HIGHLIGHTING"));
     //    Select different highlighting schemes.
-    QComboBox* highlightingScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "highlightingScheme"));
+    auto highlightingScheme = GTWidget::findComboBox(os, "highlightingScheme");
     GTComboBox::selectItemByText(os, highlightingScheme, "Conservation level");
 
     auto thresholdSlider = GTWidget::findSlider(os, "thresholdSlider");
@@ -2085,7 +2078,7 @@ GUI_TEST_CLASS_DEFINITION(test_4209) {
     // Run a task with 10k reads to align (total run time is 20-30 minutes).
     // Check that the task runs correctly.
     // Cancel the task: check that UI is not frozen and the task can be canceled correctly.
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));  // Workflow dir selector.
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));  // Workflow dir selector.
     GTFileDialog::openFile(os, testDir + "_common_data/scenarios/_regression/4209/", "crash.uwl");
     GTUtilsWorkflowDesigner::checkWorkflowDesignerWindowIsActive(os);
 
@@ -2106,7 +2099,7 @@ GUI_TEST_CLASS_DEFINITION(test_4209_1) {
     // Check that the task finishes with no errors.
     GTLogTracer logTracer;
 
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/scenarios/_regression/4209/crash.uwl");
     GTUtilsWorkflowDesigner::checkWorkflowDesignerWindowIsActive(os);
 
@@ -2130,7 +2123,7 @@ GUI_TEST_CLASS_DEFINITION(test_4209_1) {
 
 GUI_TEST_CLASS_DEFINITION(test_4218) {
     // Check that "Write Annotations" worker takes into account object names of incoming annotation tables
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/regression/4218/test.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -2149,7 +2142,7 @@ GUI_TEST_CLASS_DEFINITION(test_4218) {
 
 GUI_TEST_CLASS_DEFINITION(test_4218_1) {
     // Check that an output annotation object has a default name if incoming annotation objects have different names
-    GTUtilsDialog::waitForDialogWhichMayRunOrNot(os, new StartupDialogFiller(os));
+    GTUtilsDialog::waitForDialog(os, new StartupDialogFiller(os));
     GTFileDialog::openFile(os, testDir + "_common_data/regression/4218/test.uwl");
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
@@ -2585,8 +2578,7 @@ GUI_TEST_CLASS_DEFINITION(test_4309_1) {
     GTUtilsWorkflowDesigner::openWorkflowDesigner(os);
     GTUtilsWorkflowDesigner::addAlgorithm(os, "Write annotations");
 
-    QTableView* table = qobject_cast<QTableView*>(GTWidget::findWidget(os, "table"));
-    CHECK_SET_ERR(table, "tableView not found");
+    auto table = GTWidget::findTableView(os, "table");
 
     QAbstractItemModel* model = table->model();
     int iMax = model->rowCount();
@@ -2859,21 +2851,17 @@ GUI_TEST_CLASS_DEFINITION(test_4368) {
     GTUtilsMSAEditorSequenceArea::click(os, QPoint(-5, 5));
     GTWidget::click(os, GTWidget::findWidget(os, "addSeq"));
 
-    QCheckBox* showDistancesColumnCheck = qobject_cast<QCheckBox*>(GTWidget::findWidget(os, "showDistancesColumnCheck"));
+    auto showDistancesColumnCheck = GTWidget::findCheckBox(os, "showDistancesColumnCheck");
     GTCheckBox::setChecked(os, showDistancesColumnCheck, true);
 
-    QGroupBox* groupBox = qobject_cast<QGroupBox*>(GTWidget::findWidget(os, "profileGroup"));
-    CHECK_SET_ERR(groupBox != nullptr, "groupBox not found!");
+    auto groupBox = GTWidget::findGroupBox(os, "profileGroup");
 
-    QRadioButton* radio = qobject_cast<QRadioButton*>(GTWidget::findWidget(os, "percentsButton", groupBox));
-    CHECK_SET_ERR(radio != nullptr, "percentsButton not found!");
+    auto radio = GTWidget::findRadioButton(os, "percentsButton", groupBox);
     GTRadioButton::click(os, radio);
-    QLabel* nameLabel = qobject_cast<QLabel*>(GTWidget::findWidget(os, "Distance column name"));
-    CHECK_SET_ERR(nameLabel != nullptr, "percentsButton not found!");
+    auto nameLabel = GTWidget::findLabel(os, "Distance column name");
     CHECK_SET_ERR(nameLabel->text() == "%", "percentsButton not found!");
 
-    QRadioButton* radio2 = qobject_cast<QRadioButton*>(GTWidget::findWidget(os, "countsButton", groupBox));
-    CHECK_SET_ERR(radio2 != nullptr, "countsButton not found!");
+    auto radio2 = GTWidget::findRadioButton(os, "countsButton", groupBox);
     GTRadioButton::click(os, radio2);
     CHECK_SET_ERR(nameLabel->text() == "score", "percentsButton not found!");
 }
@@ -2935,8 +2923,7 @@ GUI_TEST_CLASS_DEFINITION(test_4383) {
     GTUtilsMSAEditorSequenceArea::scrollToPosition(os, QPoint(603, 1));
 
     QWidget* activeWindow = GTUtilsMdi::activeWindow(os);
-    MSAEditorSequenceArea* msaEditArea = qobject_cast<MSAEditorSequenceArea*>(GTWidget::findWidget(os, "msa_editor_sequence_area", activeWindow));
-    CHECK_SET_ERR(msaEditArea != nullptr, "MsaEditorSequenceArea not found");
+    GTWidget::findExactWidget<MSAEditorSequenceArea*>(os, "msa_editor_sequence_area", activeWindow);
     QWidget* msaOffsetRight = GTWidget::findWidget(os, "msa_editor_offsets_view_widget_right", activeWindow);
     CHECK_SET_ERR(msaOffsetRight != nullptr, "MsaOffset Left not found");
 
@@ -3056,7 +3043,7 @@ GUI_TEST_CLASS_DEFINITION(test_4434) {
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
     // 4. Close the project.
-    GTUtilsProject::closeProject(os);
+    GTUtilsProject::closeProject(os, false);
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
     // 5. Open the saved project.
@@ -3216,7 +3203,7 @@ GUI_TEST_CLASS_DEFINITION(test_4488) {
     GTUtilsOptionPanelMsa::openTab(os, GTUtilsOptionPanelMsa::Statistics);
 
     // 4. Check "Show distances column".
-    QCheckBox* showDistancesColumnCheck = qobject_cast<QCheckBox*>(GTWidget::findWidget(os, "showDistancesColumnCheck"));
+    auto showDistancesColumnCheck = GTWidget::findCheckBox(os, "showDistancesColumnCheck");
     GTCheckBox::setChecked(os, showDistancesColumnCheck, true);
 
     // 5. Switch off auto updating.
@@ -3723,9 +3710,8 @@ GUI_TEST_CLASS_DEFINITION(test_4591_1) {
             GTLineEdit::setText(os, startEdit, QString::number(321));
             GTLineEdit::setText(os, endEdit, QString::number(123));
 
-            QDialogButtonBox* box = qobject_cast<QDialogButtonBox*>(GTWidget::findWidget(os, "buttonBox"));
+            auto box = GTWidget::findDialogButtonBox(os, "buttonBox");
             QPushButton* goButton = box->button(QDialogButtonBox::Ok);
-            CHECK_SET_ERR(goButton != nullptr, "Go button not found");
             CHECK_SET_ERR(!goButton->isEnabled(), "Go button is enabled");
 
             GTLineEdit::setText(os, startEdit, QString::number(123));
@@ -4185,8 +4171,7 @@ GUI_TEST_CLASS_DEFINITION(test_4694) {
     if (widget->isHidden()) {
         GTWidget::click(os, GTWidget::findWidget(os, "ArrowHeader_Output settings"));
     }
-    QCheckBox* inNewWindowCheckBox = qobject_cast<QCheckBox*>(GTWidget::findWidget(os, "inNewWindowCheckBox"));
-    CHECK_SET_ERR(inNewWindowCheckBox != nullptr, "inNewWindowCheckBox not found");
+    auto inNewWindowCheckBox = GTWidget::findCheckBox(os, "inNewWindowCheckBox");
     GTCheckBox::setChecked(os, inNewWindowCheckBox, false);
     GTWidget::click(os, GTWidget::findWidget(os, "alignButton"));
 
@@ -4522,8 +4507,8 @@ GUI_TEST_CLASS_DEFINITION(test_4719_1) {
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
     //    Expected state: "UGENE" color scheme is selected, "No highlighting" highlight scheme is selected
-    QComboBox* colorScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "colorScheme"));
-    QComboBox* highlightingScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "highlightingScheme"));
+    auto colorScheme = GTWidget::findComboBox(os, "colorScheme");
+    auto highlightingScheme = GTWidget::findComboBox(os, "highlightingScheme");
     GTComboBox::checkCurrentUserDataValue(os, colorScheme, MsaColorScheme::UGENE_NUCL);
     GTComboBox::checkCurrentUserDataValue(os, highlightingScheme, MsaHighlightingScheme::EMPTY);
 
@@ -4532,8 +4517,8 @@ GUI_TEST_CLASS_DEFINITION(test_4719_1) {
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
     //    Expected state: "UGENE" color scheme is selected, "No highlighting" highlight scheme is selected
-    colorScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "colorScheme"));
-    highlightingScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "highlightingScheme"));
+    colorScheme = GTWidget::findComboBox(os, "colorScheme");
+    highlightingScheme = GTWidget::findComboBox(os, "highlightingScheme");
     GTComboBox::checkCurrentUserDataValue(os, colorScheme, MsaColorScheme::UGENE_NUCL);
     GTComboBox::checkCurrentUserDataValue(os, highlightingScheme, MsaHighlightingScheme::EMPTY);
 }
@@ -4552,8 +4537,8 @@ GUI_TEST_CLASS_DEFINITION(test_4719_2) {
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
     //    Expected state: "UGENE" color scheme is selected, "UGENE" highlight scheme is selected
-    QComboBox* colorScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "colorScheme"));
-    QComboBox* highlightingScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "highlightingScheme"));
+    auto colorScheme = GTWidget::findComboBox(os, "colorScheme");
+    auto highlightingScheme = GTWidget::findComboBox(os, "highlightingScheme");
     GTComboBox::checkCurrentUserDataValue(os, colorScheme, MsaColorScheme::UGENE_AMINO);
     GTComboBox::checkCurrentUserDataValue(os, highlightingScheme, MsaHighlightingScheme::EMPTY);
 
@@ -4562,8 +4547,8 @@ GUI_TEST_CLASS_DEFINITION(test_4719_2) {
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
     //    Expected state: "UGENE" color scheme is selected, "No highlighting" highlight scheme is selected
-    colorScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "colorScheme"));
-    highlightingScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "highlightingScheme"));
+    colorScheme = GTWidget::findComboBox(os, "colorScheme");
+    highlightingScheme = GTWidget::findComboBox(os, "highlightingScheme");
     GTComboBox::checkCurrentUserDataValue(os, colorScheme, MsaColorScheme::UGENE_AMINO);
     GTComboBox::checkCurrentUserDataValue(os, highlightingScheme, MsaHighlightingScheme::EMPTY);
 }
@@ -4590,8 +4575,8 @@ GUI_TEST_CLASS_DEFINITION(test_4719_3) {
     GTUtilsOptionPanelMsa::openTab(os, GTUtilsOptionPanelMsa::Highlighting);
 
     //    Expected state: "UGENE" color scheme is selected, "No highlighting" highlight scheme is selected
-    QComboBox* colorScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "colorScheme"));
-    QComboBox* highlightingScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "highlightingScheme"));
+    auto colorScheme = GTWidget::findComboBox(os, "colorScheme");
+    auto highlightingScheme = GTWidget::findComboBox(os, "highlightingScheme");
 
     GTComboBox::checkCurrentUserDataValue(os, colorScheme, MsaColorScheme::UGENE_AMINO);
     GTComboBox::checkCurrentUserDataValue(os, highlightingScheme, MsaHighlightingScheme::EMPTY);
@@ -4868,6 +4853,7 @@ GUI_TEST_CLASS_DEFINITION(test_4782) {
     CHECK_SET_ERR(nullptr == dotplotWidget, "A dotplot widget unexpectedly found");
 
     //    6. Select all documents in project. Press delete.
+    GTUtilsDialog::waitForDialog(os, new MessageBoxDialogFiller(os, QMessageBox::No, "Save dot-plot data before closing?"));
     GTWidget::click(os, GTUtilsProjectTreeView::getTreeView(os));
     GTKeyboardDriver::keyClick('a', Qt::ControlModifier);
     GTKeyboardDriver::keyClick(Qt::Key_Delete);
@@ -4883,6 +4869,46 @@ GUI_TEST_CLASS_DEFINITION(test_4782) {
 
     QWidget* murineMdi = GTUtilsMdi::findWindow(os, murineMdiTitle, findOptions);
     CHECK_SET_ERR(nullptr == murineMdi, "'murine.gb' Sequence View is not closed");
+}
+
+GUI_TEST_CLASS_DEFINITION(test_4783) {
+    // 1. Open _common_data/scenarios/_regression/4783/4783.aln
+    // 2. Open general option panel tab, set consensus algorithm "Levitsky" and treshold 90
+    // Expected state: consensus is BA
+    // 3. Remove "2" sequence
+    // Expected state: consensus is -A
+    // 4. Close view, and open again
+    // Expected state: consensus is -A
+    // 5. Remove "1" sequence
+    // Expected state: consensus is BB
+
+    GTFileDialog::openFile(os, testDir + "_common_data/scenarios/_regression/4783/4783.aln");
+    GTUtilsTaskTreeView::waitTaskFinished(os);
+
+    GTUtilsOptionPanelMsa::openTab(os, GTUtilsOptionPanelMsa::General);
+    auto consensusType = GTWidget::findComboBox(os, "consensusType");
+    GTComboBox::selectItemByText(os, consensusType, "Levitsky");
+    auto thresholdSpinBox = GTWidget::findSpinBox(os, "thresholdSpinBox");
+    GTSpinBox::setValue(os, thresholdSpinBox, 90, GTGlobals::UseKeyBoard);
+    GTUtilsMSAEditorSequenceArea::checkConsensus(os, "-H");
+
+    GTUtilsMsaEditor::clickSequenceName(os, "2");
+    GTKeyboardDriver::keyClick(Qt::Key_Delete);
+    GTUtilsTaskTreeView::waitTaskFinished(os);
+    GTUtilsMSAEditorSequenceArea::checkConsensus(os, "-A");
+
+    GTUtilsMdi::closeWindow(os, "4783 [4783.aln]");
+
+    GTUtilsProjectTreeView::doubleClickItem(os, "4783.aln");
+    GTUtilsTaskTreeView::waitTaskFinished(os);
+    GTUtilsMSAEditorSequenceArea::checkConsensus(os, "-A");
+
+    GTWidget::click(os, GTAction::button(os, "msa_action_undo"));
+
+    GTUtilsMsaEditor::clickSequenceName(os, "1");
+    GTKeyboardDriver::keyClick(Qt::Key_Delete);
+    GTUtilsTaskTreeView::waitTaskFinished(os);
+    GTUtilsMSAEditorSequenceArea::checkConsensus(os, "BB");
 }
 
 GUI_TEST_CLASS_DEFINITION(test_4784_2) {
@@ -4933,6 +4959,7 @@ GUI_TEST_CLASS_DEFINITION(test_4785_1) {
     GTUtilsNotifications::waitForNotification(os, true, "A problem occurred during aligning profile to profile with MUSCLE. The original alignment is no more available.");
     QFile::remove(sandBoxDir + "test_4785.aln");
     GTUtilsTaskTreeView::waitTaskFinished(os);
+    GTUtilsDialog::checkNoActiveWaiters(os);
 }
 
 GUI_TEST_CLASS_DEFINITION(test_4785_2) {
@@ -4974,8 +5001,8 @@ GUI_TEST_CLASS_DEFINITION(test_4795) {
     GTUtilsOptionPanelMsa::openTab(os, GTUtilsOptionPanelMsa::Highlighting);
 
     //    Expected state: "UGENE" color scheme is selected, "No highlighting" highlight scheme is selected
-    QComboBox* colorScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "colorScheme"));
-    QComboBox* highlightingScheme = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "highlightingScheme"));
+    auto colorScheme = GTWidget::findComboBox(os, "colorScheme");
+    auto highlightingScheme = GTWidget::findComboBox(os, "highlightingScheme");
     GTComboBox::checkCurrentValue(os, colorScheme, "UGENE    ");
     GTComboBox::checkCurrentValue(os, highlightingScheme, "No highlighting    ");
 }
@@ -5391,8 +5418,7 @@ GUI_TEST_CLASS_DEFINITION(test_4871) {
     if (widget->isHidden()) {
         GTWidget::click(os, GTWidget::findWidget(os, "ArrowHeader_Output settings"));
     }
-    QCheckBox* inNewWindowCheckBox = qobject_cast<QCheckBox*>(GTWidget::findWidget(os, "inNewWindowCheckBox"));
-    CHECK_SET_ERR(inNewWindowCheckBox != nullptr, "inNewWindowCheckBox not found");
+    auto inNewWindowCheckBox = GTWidget::findCheckBox(os, "inNewWindowCheckBox");
     GTCheckBox::setChecked(os, inNewWindowCheckBox, false);
     GTWidget::click(os, GTWidget::findWidget(os, "alignButton"));
 
@@ -5453,7 +5479,7 @@ GUI_TEST_CLASS_DEFINITION(test_4885_3) {
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
     //    4. Close the project.
-    GTUtilsProject::closeProject(os);
+    GTUtilsProject::closeProject(os, false);
     GTUtilsTaskTreeView::waitTaskFinished(os);
 
     //    5. Open the saved project.
@@ -5540,13 +5566,11 @@ GUI_TEST_CLASS_DEFINITION(test_4913) {
         CheckWordSizeScenario() {
         }
         void run(HI::GUITestOpStatus& os) {
-            QComboBox* comboAlg = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "dataBase"));
-            CHECK_SET_ERR(comboAlg != nullptr, "dataBase not found!");
+            auto comboAlg = GTWidget::findComboBox(os, "dataBase");
             CHECK_SET_ERR(comboAlg->currentText() == "blastp", QString("Value of dataBase not equal blastp, it has other default value: %1!").arg(comboAlg->currentText()));
 
             GTTabWidget::setCurrentIndex(os, GTWidget::findTabWidget(os, "optionsTab"), 1);
-            QComboBox* combo = qobject_cast<QComboBox*>(GTWidget::findWidget(os, "wordSizeComboBox"));
-            CHECK_SET_ERR(combo != nullptr, "wordSizeComboBox not found!");
+            auto combo = GTWidget::findComboBox(os, "wordSizeComboBox");
             CHECK_SET_ERR(combo->currentText() == "6", QString("Value of wordSizeComboBox not equal 6, it has other default value: %1!").arg(combo->currentText()));
 
             GTKeyboardDriver::keyClick(Qt::Key_Escape);
@@ -5684,8 +5708,7 @@ GUI_TEST_CLASS_DEFINITION(test_4938_1) {
     GTFileDialog::openFile(os, dataDir + "samples/Genbank", "murine.gb");
 
     GTUtilsOptionPanelSequenceView::openTab(os, GTUtilsOptionPanelSequenceView::AnnotationsHighlighting);
-    QTreeWidget* annTree = qobject_cast<QTreeWidget*>(GTWidget::findWidget(os, "OP_ANNOT_HIGHLIGHT_TREE"));
-    CHECK_SET_ERR(annTree != nullptr, "Cannot find OP_ANNOT_HIGHLIGHT_TREE");
+    auto annTree = GTWidget::findTreeWidget(os, "OP_ANNOT_HIGHLIGHT_TREE");
     CHECK_SET_ERR(annTree->isVisible(), "OP_ANNOT_HIGHLIGHT_TREE is not visible");
     GTWidget::click(os, GTWidget::findWidget(os, "show_all_annotation_types"));
     CHECK_SET_ERR(!annTree->findItems("CDS", Qt::MatchExactly).isEmpty(), "Cannot find CDS item in OP_ANNOT_HIGHLIGHT_TREE");

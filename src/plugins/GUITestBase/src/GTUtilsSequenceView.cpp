@@ -78,11 +78,7 @@ public:
 
         *str = textEdit->toPlainText();
 
-        QDialogButtonBox* box = qobject_cast<QDialogButtonBox*>(GTWidget::findWidget(os, "buttonBox", widget));
-        GT_CHECK(box != nullptr, "buttonBox is NULL");
-        QPushButton* button = box->button(QDialogButtonBox::Cancel);
-        GT_CHECK(button != nullptr, "cancel button is NULL");
-        GTWidget::click(os, button);
+        GTUtilsDialog::clickButtonBox(os, QDialogButtonBox::Cancel);
     }
 
 private:
@@ -407,8 +403,7 @@ QString GTUtilsSequenceView::getSeqName(HI::GUITestOpStatus& os, int number) {
 #define GT_METHOD_NAME "getSeqName"
 QString GTUtilsSequenceView::getSeqName(HI::GUITestOpStatus& os, ADVSingleSequenceWidget* seqWidget) {
     GT_CHECK_RESULT(nullptr != seqWidget, "Sequence widget is NULL!", "");
-    QLabel* nameLabel = qobject_cast<QLabel*>(GTWidget::findWidget(os, "nameLabel", seqWidget));
-    GT_CHECK_RESULT(nullptr != nameLabel, "Name label is NULL!", "");
+    auto nameLabel = GTWidget::findLabel(os, "nameLabel", seqWidget);
 
     QString labelText = nameLabel->text();
     QString result = labelText.left(labelText.indexOf("[") - 1);  // detachment of name from label text

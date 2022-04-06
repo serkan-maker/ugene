@@ -340,9 +340,10 @@ enum DocumentObjectRemovalMode {
     DocumentObjectRemovalMode_Deallocate,  // ordinary removal: both object and its DB representation are deallocated
     DocumentObjectRemovalMode_OnlyNotify,  // fake removal: neither object nor its DB representation are deallocated.
     // Only signals about removal are emitted. The object itself remains to belong to the document.
-    DocumentObjectRemovalMode_Release  // fake removal: the same as DocumentObjectRemovalMode_OnlyNotify.
+    DocumentObjectRemovalMode_Release,  // fake removal: the same as DocumentObjectRemovalMode_OnlyNotify.
     // Additionally, the object is excluded from the document's child objects list.
     // External code has to handle a proper object deallocation.
+    DocumentObjectRemovalMode_Detach  // sudo removes an object from the doc, removes an object, leaving it in the db.
 };
 
 class DocumentChildEventsHelper;
@@ -532,6 +533,7 @@ signals:
     void si_urlChanged();
     void si_nameChanged();
     void si_objectAdded(GObject* o);
+    void si_beforeObjectRemoved(GObject* o);
     void si_objectRemoved(GObject* o);
     void si_loadedStateChanged();
 };
